@@ -1,6 +1,6 @@
 # Techgrity Systems Master-Visual Approval Register
 
-**Status:** ACTIVE  
+**Status:** COMPLETE  
 **Opened:** 29 July 2026
 
 This register records the approval state of the 13 authoritative master page templates. Internal rendering and QA do not equal user design approval. A template becomes `APPROVED` only after the user has reviewed the designated desktop reference or explicitly instructed that a pending reviewed template be locked.
@@ -17,9 +17,9 @@ This register records the approval state of the 13 authoritative master page tem
 | 8 | Industries overview | revised page-specific desktop reference | `APPROVED` | 29 July 2026 | User approved the revised sector operating-map hero and directed the programme to continue. |
 | 9 | Industry detail | `visuals/batch-3-review-manifest.md` | `APPROVED` | 29 July 2026 | User explicitly instructed that the pending reviewed templates be locked. |
 | 10 | How We Deliver | `visuals/batch-3-review-manifest.md` | `APPROVED` | 29 July 2026 | User explicitly instructed that the pending reviewed templates be locked. |
-| 11 | Company | not produced correctly | `NOT STARTED` | — | Generated static mockup rejected; must be rebuilt as real HTML/CSS prototype. |
-| 12 | Resources | not produced correctly | `NOT STARTED` | — | Generated static mockup rejected; must be rebuilt as real HTML/CSS prototype. |
-| 13 | Contact and enquiry forms | not produced correctly | `NOT STARTED` | — | Generated static mockup rejected; must be rebuilt as real HTML/CSS prototype. |
+| 11 | Company | `visuals/final-three-review-manifest.md` | `APPROVED` | 29 July 2026 | User explicitly confirmed that the final three templates were approved and directed implementation to proceed. |
+| 12 | Resources | `visuals/final-three-review-manifest.md` | `APPROVED` | 29 July 2026 | User explicitly confirmed that the final three templates were approved and directed implementation to proceed. |
+| 13 | Contact and enquiry forms | `visuals/final-three-review-manifest.md` | `APPROVED` | 29 July 2026 | User explicitly confirmed that the final three templates were approved and directed implementation to proceed. |
 
 ## Approval evidence
 
@@ -28,39 +28,14 @@ This register records the approval state of the 13 authoritative master page tem
 - page-specific hero correction: [`review-decisions/2026-07-29-page-specific-hero-correction.md`](review-decisions/2026-07-29-page-specific-hero-correction.md);
 - Technology Supply and Industries approval: [`review-decisions/2026-07-29-technology-supply-industries-approval.md`](review-decisions/2026-07-29-technology-supply-industries-approval.md);
 - rejected final-three mockups: [`review-decisions/2026-07-29-final-three-mockups-rejected.md`](review-decisions/2026-07-29-final-three-mockups-rejected.md);
+- final three user approval: [`review-decisions/2026-07-29-final-three-user-approval.md`](review-decisions/2026-07-29-final-three-user-approval.md);
+- final three review manifest: [`../visuals/final-three-review-manifest.md`](../visuals/final-three-review-manifest.md);
 - Batch 3 review manifest: [`../visuals/batch-3-review-manifest.md`](../visuals/batch-3-review-manifest.md);
 - Batch 2 review manifest: [`../visuals/batch-2-review-manifest.md`](../visuals/batch-2-review-manifest.md);
 - Wave 1 internal QA report: [`../visuals/wave-1-qa-report.md`](../visuals/wave-1-qa-report.md);
 - Wave 1 deterministic reference manifest: [`../visuals/wave-1-reference-manifest.md`](../visuals/wave-1-reference-manifest.md);
 - Wave 1 prototype source: [`../visuals/prototypes/`](../visuals/prototypes/).
 
-## User review protocol
+## Completion boundary
 
-The user is shown one desktop reference per master template. Mobile and tablet renders remain internal QA evidence and are not part of routine design approval unless the user specifically requests them.
-
-A condensed review board may show the complete page in one image, but it never defines the final implementation height. Production pages use natural document flow, proper section spacing and normal scrolling.
-
-## Interaction-affordance rule
-
-- Navigational cards may use arrows, hover/focus treatment and pointer behaviour only when they link to a real planned route or approved in-page destination.
-- Informational cards must not use arrows, pointer cursors, misleading hover lift or link styling.
-- No dead card, fake control or destination-less tile may appear in production.
-
-## Hero-specificity rule
-
-Before a hero is produced, its single page-specific message and best visual form must be defined. A hero that could be reused on another page without feeling wrong is too generic and must not be presented for approval.
-
-## Prototype-authority rule
-
-Master visuals must be produced as repository-backed HTML/CSS prototypes and rendered from those prototypes. Generated static page mockups are not implementation authority and must not be presented as completed design work.
-
-## Status values
-
-- `NOT STARTED`
-- `DRAFT`
-- `READY FOR USER REVIEW`
-- `REVISION REQUIRED`
-- `APPROVED`
-- `SUPERSEDED`
-
-Implementation authority exists only when the relevant template status is `APPROVED` after explicit user review or lock instruction.
+All 13 master templates are now approved as implementation authority. Production implementation must preserve natural page height, page-specific hero logic, factual controls, accessibility requirements and the navigational-versus-informational affordance standard.
