@@ -17,9 +17,9 @@ This register records the approval state of the 13 authoritative master page tem
 | 8 | Industries overview | revised page-specific desktop reference | `APPROVED` | 29 July 2026 | User approved the revised sector operating-map hero and directed the programme to continue. |
 | 9 | Industry detail | `visuals/batch-3-review-manifest.md` | `APPROVED` | 29 July 2026 | User explicitly instructed that the pending reviewed templates be locked. |
 | 10 | How We Deliver | `visuals/batch-3-review-manifest.md` | `APPROVED` | 29 July 2026 | User explicitly instructed that the pending reviewed templates be locked. |
-| 11 | Company | not produced correctly | `NOT STARTED` | — | Generated static mockup rejected; must be rebuilt as real HTML/CSS prototype. |
-| 12 | Resources | not produced correctly | `NOT STARTED` | — | Generated static mockup rejected; must be rebuilt as real HTML/CSS prototype. |
-| 13 | Contact and enquiry forms | not produced correctly | `NOT STARTED` | — | Generated static mockup rejected; must be rebuilt as real HTML/CSS prototype. |
+| 11 | Company | `visuals/final-three-review-manifest.md` | `READY FOR USER REVIEW` | — | Real HTML/CSS prototype with a page-specific corporate operating-model hero and no fake team photography. |
+| 12 | Resources | `visuals/final-three-review-manifest.md` | `READY FOR USER REVIEW` | — | Real HTML/CSS prototype with a controlled document-publication framework and no fake downloads. |
+| 13 | Contact and enquiry forms | `visuals/final-three-review-manifest.md` | `READY FOR USER REVIEW` | — | Real HTML/CSS prototype with a three-route enquiry framework and separated form patterns. |
 
 ## Approval evidence
 
@@ -28,6 +28,7 @@ This register records the approval state of the 13 authoritative master page tem
 - page-specific hero correction: [`review-decisions/2026-07-29-page-specific-hero-correction.md`](review-decisions/2026-07-29-page-specific-hero-correction.md);
 - Technology Supply and Industries approval: [`review-decisions/2026-07-29-technology-supply-industries-approval.md`](review-decisions/2026-07-29-technology-supply-industries-approval.md);
 - rejected final-three mockups: [`review-decisions/2026-07-29-final-three-mockups-rejected.md`](review-decisions/2026-07-29-final-three-mockups-rejected.md);
+- final three review manifest: [`../visuals/final-three-review-manifest.md`](../visuals/final-three-review-manifest.md);
 - Batch 3 review manifest: [`../visuals/batch-3-review-manifest.md`](../visuals/batch-3-review-manifest.md);
 - Batch 2 review manifest: [`../visuals/batch-2-review-manifest.md`](../visuals/batch-2-review-manifest.md);
 - Wave 1 internal QA report: [`../visuals/wave-1-qa-report.md`](../visuals/wave-1-qa-report.md);
