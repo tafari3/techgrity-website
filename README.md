@@ -1,53 +1,80 @@
 # Techgrity Systems Website
 
-Official planning, design, implementation and evidence repository for the Techgrity Systems corporate website.
+Production website source for **Techgrity Systems**.
 
-## Positioning
+> **Digital systems. Critical infrastructure. One accountable partner.**
 
-**Digital systems. Critical infrastructure. One accountable partner.**
+The site is generated from structured page data and reusable templates so that all 31 public routes share one controlled navigation, visual system, metadata model and acceptance process.
 
-Techgrity Systems designs, builds, integrates and supports software platforms, networks, data centres, telecommunications, power systems and technical infrastructure for organisations across Zimbabwe and Africa.
+## Current implementation
 
-## Delivery sequence
+- 31 canonical public pages;
+- four non-indexed supporting system pages;
+- approved 13-template visual system;
+- responsive desktop, tablet and mobile layouts;
+- accessible navigation, mega-menus, forms and cookie preferences;
+- general enquiry, project enquiry and capability-document request endpoints;
+- unique metadata, canonical URLs, structured data, XML sitemap and robots file;
+- deterministic build, structural validation, form validation and Chromium browser QA;
+- Vercel-ready static output and serverless form handlers.
 
-1. Lock the website architecture. **Complete**
-2. Complete the master website specification. **Complete baseline**
-3. Complete exact page-by-page content specifications. **Complete**
-4. Complete the visual design system and image art-direction brief. **Complete**
-5. Complete SEO, functional, factual-control and acceptance specifications. **Complete baseline**
-6. Produce and approve the authoritative master-page visuals. **Next stage**
-7. Implement the shared system and all approved page families.
-8. Complete functional, responsive, accessibility, SEO, security, performance and visual QA.
-9. Deploy only after evidence-backed acceptance.
+## Repository structure
 
-## Locked architecture
+```text
+src/                 structured content and HTML templates
+public/              shared CSS, JavaScript and approved assets
+api/                 server-side enquiry endpoints
+scripts/             build, validation, form tests and browser QA
+docs/                architecture, content, design and acceptance controls
+visuals/             approved master prototypes and review evidence
+.github/workflows/   continuous integration
+dist/                generated output; not committed
+```
 
-- one Techgrity Systems corporate website;
-- 31 intentional public pages;
-- five supporting system experiences;
-- Digital Systems & AI and Infrastructure & Engineering as specialist divisions;
-- Technology Supply & Project Delivery as the connecting delivery capability;
-- 13 authoritative master page templates;
-- no fabricated clients, projects, partners, certifications, scale claims or product evidence.
+## Local development
 
-## Documentation
+```bash
+npm ci && npm test && python3 scripts/browser-qa.py
+```
 
-Authoritative decisions and specifications are maintained under [`docs/`](docs/).
+To serve the generated site locally:
 
-The current documentation set includes:
+```bash
+npm run build && npm run serve
+```
 
-- locked website architecture;
-- master website specification;
-- exact page-by-page content specifications;
-- visual design system;
-- image and art-direction brief;
-- SEO and metadata matrix;
-- functional and integration specification;
-- factual-information register;
-- visual and functional acceptance checklist.
+The server listens on `http://127.0.0.1:4173` by default.
 
-## Current status
+## Enquiry delivery
 
-The full planning and design-governance baseline is complete. The next controlled stage is production and approval of the remaining 12 master-page visual designs. The existing approved homepage remains the thirteenth master template and the visual quality benchmark.
+The form endpoints fail closed until live mail delivery is commissioned. Configure these server-side environment variables:
 
-Implementation must not outrun approved master visuals or unresolved factual dependencies.
+```text
+SMTP_HOST
+SMTP_PORT
+SMTP_SECURE
+SMTP_USER
+SMTP_PASS
+MAIL_FROM_EMAIL
+ENQUIRY_TO_EMAIL
+```
+
+`FORM_DRY_RUN=1` is for controlled local or CI testing only and must not be enabled in production.
+
+## Build outputs
+
+`npm run build` creates `dist/` with:
+
+- all public and system routes;
+- shared assets;
+- `sitemap.xml`;
+- `robots.txt`;
+- `route-manifest.json`.
+
+Generated output and runtime screenshots are deliberately excluded from Git. CI regenerates and validates them from the reviewed source.
+
+## Publication boundaries
+
+The site must not publish invented legal details, exact addresses, clients, projects, partners, certifications, statistics or downloadable documents. Capability statements appear as downloadable resources only after the real files, versions and publication approvals exist.
+
+Production completion requires deployed-route, DNS, TLS, form-delivery, document, monitoring, accessibility, security, performance and visual evidence against the exact release commit.

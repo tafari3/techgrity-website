@@ -1,0 +1,36 @@
+name: Materialize Production Source
+
+on:
+  push:
+    branches:
+      - agent/production-site-foundation
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout staged source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify source transfer archive
+        run: echo "f41552671eec20c12f1ad262f1639cd422e289e139826f322dbc079dd6d7d42f  code-source.tar.xz" | sha256sum -c -
+
+      - name: Materialize exact source
+        run: |
+          tar -xJf code-source.tar.xz
+          rm code-source.tar.xz .github/workflows/materialize-source.yml
+
+      - name: Commit materialized source
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A public src code-source.tar.xz .github/workflows/materialize-source.yml
+          git commit -m "Materialize production source"
+          git push origin HEAD:${GITHUB_REF_NAME}
