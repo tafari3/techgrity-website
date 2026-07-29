@@ -15,6 +15,7 @@ This directory is the authoritative source of truth for the Techgrity Systems co
 | [`06-functional-integration-specification.md`](06-functional-integration-specification.md) | **Baseline complete** | Defines navigation, forms, document handling, mail routing, privacy, cookies, security, monitoring and deployment behaviour. |
 | [`07-factual-information-register.md`](07-factual-information-register.md) | **Active control register** | Records confirmed, provisional, blocked, omitted and future facts and controls all public claims. |
 | [`08-visual-functional-acceptance-checklist.md`](08-visual-functional-acceptance-checklist.md) | **Baseline complete** | Defines evidence required for master visuals, implementation, accessibility, forms, SEO, security, performance and production commissioning. |
+| [`09-master-visual-production-plan.md`](09-master-visual-production-plan.md) | **Ready for execution** | Defines production waves, required desktop/mobile outputs, review method, asset structure and implementation handoff conditions for all 13 master templates. |
 
 ## Programme status
 
@@ -29,7 +30,8 @@ This directory is the authoritative source of truth for the Techgrity Systems co
 - SEO and metadata baseline complete;
 - functional and integration contract complete;
 - factual-information control register established;
-- visual and functional acceptance checklist complete.
+- visual and functional acceptance checklist complete;
+- master-visual production sequence and approval method defined.
 
 ### Next controlled stage
 
@@ -50,7 +52,7 @@ Produce and approve the remaining 12 authoritative master-page visuals in this o
 
 The homepage is the approved thirteenth template and remains the visual benchmark.
 
-Every master template requires desktop and mobile compositions before the corresponding page family moves into implementation.
+Every master template requires desktop and mobile compositions before the corresponding page family moves into implementation. The production and approval rules are defined in [`09-master-visual-production-plan.md`](09-master-visual-production-plan.md).
 
 ## Later controlled deliverables
 
