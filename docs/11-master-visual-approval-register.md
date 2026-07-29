@@ -7,11 +7,11 @@ This register records the approval state of the 13 authoritative master page tem
 
 | # | Master template | Reference identity | Status | Approval date | Notes |
 |---:|---|---|---|---|---|
-| 1 | Homepage | existing verified desktop reference | `READY FOR USER REVIEW` | — | Technically rendered and checked; user has not yet reviewed it. |
-| 2 | Capabilities overview | `visuals/wave-1-reference-manifest.md` | `READY FOR USER REVIEW` | — | Internal desktop/tablet/mobile QA passed; user review is desktop-only. |
-| 3 | Digital Systems landing | `visuals/wave-1-reference-manifest.md` | `READY FOR USER REVIEW` | — | Internal desktop/tablet/mobile QA passed; user review is desktop-only. |
+| 1 | Homepage | existing verified desktop reference | `APPROVED` | 29 July 2026 | User reviewed the desktop reference and directed the programme to proceed. |
+| 2 | Capabilities overview | `visuals/wave-1-reference-manifest.md` | `APPROVED` | 29 July 2026 | User reviewed the desktop reference; internal responsive QA also passed. |
+| 3 | Digital Systems landing | `visuals/wave-1-reference-manifest.md` | `APPROVED` | 29 July 2026 | User reviewed the desktop reference; internal responsive QA also passed. |
 | 4 | Digital capability detail | not produced | `NOT STARTED` | — | Wave 2 |
-| 5 | Infrastructure landing | `visuals/wave-1-reference-manifest.md` | `READY FOR USER REVIEW` | — | Internal desktop/tablet/mobile QA passed; user review is desktop-only. |
+| 5 | Infrastructure landing | `visuals/wave-1-reference-manifest.md` | `APPROVED` | 29 July 2026 | User reviewed the desktop reference; internal responsive QA also passed. |
 | 6 | Infrastructure capability detail | not produced | `NOT STARTED` | — | Wave 2 |
 | 7 | Technology Supply & Integration | not produced | `NOT STARTED` | — | Wave 2 |
 | 8 | Industries overview | not produced | `NOT STARTED` | — | Wave 3 |
@@ -21,12 +21,12 @@ This register records the approval state of the 13 authoritative master page tem
 | 12 | Resources | not produced | `NOT STARTED` | — | Wave 4 |
 | 13 | Contact and enquiry forms | not produced | `NOT STARTED` | — | Wave 4 |
 
-## Wave 1 internal evidence
+## Approval evidence
 
+- user decision: [`review-decisions/2026-07-29-wave-1-user-approval.md`](review-decisions/2026-07-29-wave-1-user-approval.md);
 - internal QA report: [`../visuals/wave-1-qa-report.md`](../visuals/wave-1-qa-report.md);
 - deterministic reference manifest: [`../visuals/wave-1-reference-manifest.md`](../visuals/wave-1-reference-manifest.md);
-- prototype source: [`../visuals/prototypes/`](../visuals/prototypes/);
-- review status correction: [`../visuals/wave-1-approval.md`](../visuals/wave-1-approval.md).
+- prototype source: [`../visuals/prototypes/`](../visuals/prototypes/).
 
 ## User review protocol
 
