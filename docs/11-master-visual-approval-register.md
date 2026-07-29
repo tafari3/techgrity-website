@@ -13,8 +13,8 @@ This register records the approval state of the 13 authoritative master page tem
 | 4 | Digital capability detail | revised Software, AI & Enterprise Applications desktop reference | `APPROVED` | 29 July 2026 | Revised hero uses a credible operations team and enterprise interface. Final implementation must use natural scrolling and proper section height rather than the condensed review-board height. |
 | 5 | Infrastructure landing | `visuals/wave-1-reference-manifest.md` | `APPROVED` | 29 July 2026 | User reviewed the desktop design; responsive QA remains internal evidence. |
 | 6 | Infrastructure capability detail | Networks & Fibre desktop reference | `APPROVED` | 29 July 2026 | Approved with two controls: final implementation uses natural page height; informational sub-capability tiles have no arrows, pointer affordance or fake links unless a real destination exists. |
-| 7 | Technology Supply & Integration | not produced | `NOT STARTED` | — | Wave 2 |
-| 8 | Industries overview | not produced | `NOT STARTED` | — | Wave 3 |
+| 7 | Technology Supply & Integration | `visuals/batch-2-review-manifest.md` | `READY FOR USER REVIEW` | — | Real HTML/CSS prototype rendered at 1672 × 941; natural page height and internal QA verified. |
+| 8 | Industries overview | `visuals/batch-2-review-manifest.md` | `READY FOR USER REVIEW` | — | Real HTML/CSS prototype rendered at 1672 × 941; natural page height and internal QA verified. |
 | 9 | Industry detail | not produced | `NOT STARTED` | — | Wave 3 |
 | 10 | How We Deliver | not produced | `NOT STARTED` | — | Wave 3 |
 | 11 | Company | not produced | `NOT STARTED` | — | Wave 4 |
@@ -25,6 +25,7 @@ This register records the approval state of the 13 authoritative master page tem
 
 - Wave 1 user decision: [`review-decisions/2026-07-29-wave-1-user-approval.md`](review-decisions/2026-07-29-wave-1-user-approval.md);
 - Wave 2 detail-template decision: [`review-decisions/2026-07-29-wave-2-detail-template-approval.md`](review-decisions/2026-07-29-wave-2-detail-template-approval.md);
+- Batch 2 review manifest: [`../visuals/batch-2-review-manifest.md`](../visuals/batch-2-review-manifest.md);
 - Wave 1 internal QA report: [`../visuals/wave-1-qa-report.md`](../visuals/wave-1-qa-report.md);
 - Wave 1 deterministic reference manifest: [`../visuals/wave-1-reference-manifest.md`](../visuals/wave-1-reference-manifest.md);
 - Wave 1 prototype source: [`../visuals/prototypes/`](../visuals/prototypes/).
