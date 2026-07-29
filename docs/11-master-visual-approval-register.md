@@ -3,7 +3,7 @@
 **Status:** ACTIVE  
 **Opened:** 29 July 2026
 
-This register records the approval state of the 13 authoritative master page templates. Internal rendering and QA do not equal user design approval. A template becomes `APPROVED` only after the user has reviewed the designated desktop reference and explicitly accepted the design direction.
+This register records the approval state of the 13 authoritative master page templates. Internal rendering and QA do not equal user design approval. A template becomes `APPROVED` only after the user has reviewed the designated desktop reference or explicitly instructed that a pending reviewed template be locked.
 
 | # | Master template | Reference identity | Status | Approval date | Notes |
 |---:|---|---|---|---|---|
@@ -15,11 +15,11 @@ This register records the approval state of the 13 authoritative master page tem
 | 6 | Infrastructure capability detail | Networks & Fibre desktop reference | `APPROVED` | 29 July 2026 | Approved with two controls: final implementation uses natural page height; informational sub-capability tiles have no arrows, pointer affordance or fake links unless a real destination exists. |
 | 7 | Technology Supply & Integration | revised page-specific desktop reference | `APPROVED` | 29 July 2026 | User approved the revised specification–staging–commissioning control-board hero and directed the programme to continue. |
 | 8 | Industries overview | revised page-specific desktop reference | `APPROVED` | 29 July 2026 | User approved the revised sector operating-map hero and directed the programme to continue. |
-| 9 | Industry detail | `visuals/batch-3-review-manifest.md` | `READY FOR USER REVIEW` | — | Government & Public Sector reference uses one public-service operating model connecting channels, workflows, data, infrastructure and governance. |
-| 10 | How We Deliver | `visuals/batch-3-review-manifest.md` | `READY FOR USER REVIEW` | — | Hero uses one project-delivery control board showing seven stages, decision gates, evidence outputs and the next controlled outcome. |
-| 11 | Company | not produced | `NOT STARTED` | — | Wave 4 |
-| 12 | Resources | not produced | `NOT STARTED` | — | Wave 4 |
-| 13 | Contact and enquiry forms | not produced | `NOT STARTED` | — | Wave 4 |
+| 9 | Industry detail | `visuals/batch-3-review-manifest.md` | `APPROVED` | 29 July 2026 | User explicitly instructed that the pending reviewed templates be locked. |
+| 10 | How We Deliver | `visuals/batch-3-review-manifest.md` | `APPROVED` | 29 July 2026 | User explicitly instructed that the pending reviewed templates be locked. |
+| 11 | Company | not produced correctly | `NOT STARTED` | — | Generated static mockup rejected; must be rebuilt as real HTML/CSS prototype. |
+| 12 | Resources | not produced correctly | `NOT STARTED` | — | Generated static mockup rejected; must be rebuilt as real HTML/CSS prototype. |
+| 13 | Contact and enquiry forms | not produced correctly | `NOT STARTED` | — | Generated static mockup rejected; must be rebuilt as real HTML/CSS prototype. |
 
 ## Approval evidence
 
@@ -27,6 +27,7 @@ This register records the approval state of the 13 authoritative master page tem
 - Wave 2 detail-template decision: [`review-decisions/2026-07-29-wave-2-detail-template-approval.md`](review-decisions/2026-07-29-wave-2-detail-template-approval.md);
 - page-specific hero correction: [`review-decisions/2026-07-29-page-specific-hero-correction.md`](review-decisions/2026-07-29-page-specific-hero-correction.md);
 - Technology Supply and Industries approval: [`review-decisions/2026-07-29-technology-supply-industries-approval.md`](review-decisions/2026-07-29-technology-supply-industries-approval.md);
+- rejected final-three mockups: [`review-decisions/2026-07-29-final-three-mockups-rejected.md`](review-decisions/2026-07-29-final-three-mockups-rejected.md);
 - Batch 3 review manifest: [`../visuals/batch-3-review-manifest.md`](../visuals/batch-3-review-manifest.md);
 - Batch 2 review manifest: [`../visuals/batch-2-review-manifest.md`](../visuals/batch-2-review-manifest.md);
 - Wave 1 internal QA report: [`../visuals/wave-1-qa-report.md`](../visuals/wave-1-qa-report.md);
@@ -49,6 +50,10 @@ A condensed review board may show the complete page in one image, but it never d
 
 Before a hero is produced, its single page-specific message and best visual form must be defined. A hero that could be reused on another page without feeling wrong is too generic and must not be presented for approval.
 
+## Prototype-authority rule
+
+Master visuals must be produced as repository-backed HTML/CSS prototypes and rendered from those prototypes. Generated static page mockups are not implementation authority and must not be presented as completed design work.
+
 ## Status values
 
 - `NOT STARTED`
@@ -58,4 +63,4 @@ Before a hero is produced, its single page-specific message and best visual form
 - `APPROVED`
 - `SUPERSEDED`
 
-Implementation authority exists only when the relevant template status is `APPROVED` after explicit user review.
+Implementation authority exists only when the relevant template status is `APPROVED` after explicit user review or lock instruction.
