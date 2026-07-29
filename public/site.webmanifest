@@ -1,0 +1,9 @@
+{
+  "name": "Techgrity Systems",
+  "short_name": "Techgrity",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F7FAFC",
+  "theme_color": "#031A45",
+  "icons": [{ "src": "/assets/favicon.png", "sizes": "512x512", "type": "image/png" }]
+}
