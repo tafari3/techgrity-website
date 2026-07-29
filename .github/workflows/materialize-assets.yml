@@ -1,0 +1,51 @@
+name: Materialize Approved Website Assets
+
+on:
+  push:
+    branches:
+      - agent/production-site-foundation
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Download and verify approved assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p public/assets/reference
+          fetch(){ url="$1"; path="$2"; expected="$3"; curl --retry 3 --retry-delay 1 -fsSL "$url" -o "$path"; actual="$(sha256sum "$path" | awk '{print $1}')"; test "$actual" = "$expected" || { echo "hash mismatch for $path: $actual" >&2; exit 1; }; }
+          fetch 'https://sdmntprukwest.oaiusercontent.com/files/00000000-4c74-8243-9ff4-17b7db1cf67f/raw?se=2026-07-29T16:15:16Z&sp=r&sv=2026-02-06&sr=b&scid=55b62fff-2677-5d9b-95c3-5c1c882438ab&skoid=6658dbdd-f305-4d30-8f6b-d62218202cb9&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-07-29T08:55:14Z&ske=2026-07-31T08:55:14Z&sks=b&skv=2026-02-06&sig=yBi6W6Htg2h//2i7w32ZtJVsbBsBuko1JyD5L3T%2BUSA%3D' public/assets/favicon.png 10bc2cdbd547dc41f14253dc2b2188d4c7e3532c7ffa749c60db386d924504db
+          fetch 'https://sdmntprukwest.oaiusercontent.com/files/00000000-d2ec-8243-af73-0b7bf9c83cf4/raw?se=2026-07-29T16:16:15Z&sp=r&sv=2026-02-06&sr=b&scid=70387388-27e2-545b-b073-144549b036ea&skoid=6658dbdd-f305-4d30-8f6b-d62218202cb9&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-07-29T06:44:04Z&ske=2026-07-31T06:44:04Z&sks=b&skv=2026-02-06&sig=twoweZqGxxo7ovHvDyP3nWsClW6baYYp0287JrVTTb4%3D' public/assets/techgrity-primary-horizontal-approved.png 76d40c46a1a9a1fde6b5a1bf7af506f4639bf29da86d0a3741416a5c2f8eeb1f
+          fetch 'https://sdmntprukwest.oaiusercontent.com/files/00000000-b664-8243-a930-bf6a22d443bb/raw?se=2026-07-29T16:15:23Z&sp=r&sv=2026-02-06&sr=b&scid=4486b85e-426a-5631-b8e6-bf6c365e2925&skoid=6658dbdd-f305-4d30-8f6b-d62218202cb9&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-07-28T23:43:52Z&ske=2026-07-30T23:43:52Z&sks=b&skv=2026-02-06&sig=JyPUXm2XjHA1BtlSOTslmGnlTL/4fce0MZ9%2BD6DM8Q4%3D' public/assets/techgrity-social-card.png 4accd29a0e9b9d12f84167baaaa125971d2cf66d56d6d382433c834534bd85ff
+          fetch 'https://sdmntprukwest.oaiusercontent.com/files/00000000-fa48-8243-bf58-6a271883c04e/raw?se=2026-07-29T16:13:44Z&sp=r&sv=2026-02-06&sr=b&scid=6ac63ab9-fc29-502b-8cfc-ae394230125a&skoid=6658dbdd-f305-4d30-8f6b-d62218202cb9&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-07-28T23:55:40Z&ske=2026-07-30T23:55:40Z&sks=b&skv=2026-02-06&sig=DUPAuDycTEv9MaRw0q4LIUPXcvpZSDgglO69AE1Yzw4%3D' public/assets/datacentre.jpg 30a4d9732a33d6e209973ba43d487e9d4d833e0673d853eea3f27b8b8cefb84e
+          fetch 'https://sdmntprukwest.oaiusercontent.com/files/00000000-1498-8243-8435-d50f6de4c6f3/raw?se=2026-07-29T16:13:52Z&sp=r&sv=2026-02-06&sr=b&scid=c36b9705-6370-50fe-bbe5-7b8b2a5630a0&skoid=6658dbdd-f305-4d30-8f6b-d62218202cb9&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-07-29T07:10:45Z&ske=2026-07-31T07:10:45Z&sks=b&skv=2026-02-06&sig=wC/7z/civgK3mXeYlj2h8R5J342Potf1iDiX/CT32KE%3D' public/assets/telecom.jpg fc673e3ce154e784807da8be464e090692bc8814380412c117f4f3dd1bb9d9aa
+          fetch 'https://sdmntprukwest.oaiusercontent.com/files/00000000-77e4-8243-b5b9-16f438dc3ebb/raw?se=2026-07-29T16:13:59Z&sp=r&sv=2026-02-06&sr=b&scid=69a44910-1426-557e-bf82-4dfa229b6971&skoid=6658dbdd-f305-4d30-8f6b-d62218202cb9&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-07-29T05:52:45Z&ske=2026-07-31T05:52:45Z&sks=b&skv=2026-02-06&sig=Cc4ii13p42NTgHaGI2t2SjMjj324SF5bVGvrtDDh9Eo%3D' public/assets/reference/cap-datacentre.jpg 50b1cf07dff1ab7396345b0f666236256e41db104cd7a10d9ed1e092cc96a743
+          fetch 'https://sdmntprukwest.oaiusercontent.com/files/00000000-8954-8243-ab04-6df9acef8026/raw?se=2026-07-29T16:14:07Z&sp=r&sv=2026-02-06&sr=b&scid=0258a0b6-bc7c-5689-a48d-6c08e284831a&skoid=6658dbdd-f305-4d30-8f6b-d62218202cb9&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-07-28T23:59:34Z&ske=2026-07-30T23:59:34Z&sks=b&skv=2026-02-06&sig=Zyb%2BfnO%2BIAMVikqp3c6sv/4PybBGRf7DfVy6lIR7E6A%3D' public/assets/reference/cap-networks.jpg d7f74d3844fbd98629fd54c863c2b32705a472295984d0cec6a7877a1beb0b2c
+          fetch 'https://sdmntprukwest.oaiusercontent.com/files/00000000-520c-8243-aa93-4576203a1988/raw?se=2026-07-29T16:14:16Z&sp=r&sv=2026-02-06&sr=b&scid=6f3ebefd-39c3-539a-9cbf-b237f84f7bd3&skoid=6658dbdd-f305-4d30-8f6b-d62218202cb9&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-07-29T07:38:42Z&ske=2026-07-31T07:38:42Z&sks=b&skv=2026-02-06&sig=hkzPajtsJxAI9FBn/FSmg5hrFlyur0Zkk5UjzuI0i4o%3D' public/assets/reference/cap-power.jpg 8a2fe35d67a3e4e1ae97ac944b6899ce45b9605c7495f25f3982a17687249dc6
+          fetch 'https://sdmntprukwest.oaiusercontent.com/files/00000000-f72c-8243-af33-f59ec563ed61/raw?se=2026-07-29T16:14:25Z&sp=r&sv=2026-02-06&sr=b&scid=aaa9b72f-842f-50e6-98e6-68e0e6cc9787&skoid=6658dbdd-f305-4d30-8f6b-d62218202cb9&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-07-29T06:17:52Z&ske=2026-07-31T06:17:52Z&sks=b&skv=2026-02-06&sig=pNB9vpt3rt%2BvdTqWT6b54xTDBNHQ5osmdk2SrNDz7Sw%3D' public/assets/reference/cap-software.jpg f7ac2b7cdb09db52041f05ccd030eaf7cc1c739bf160cea02050fbca14b5542e
+          fetch 'https://sdmntprukwest.oaiusercontent.com/files/00000000-2f8c-8243-8311-dd9fbdfbb895/raw?se=2026-07-29T16:14:32Z&sp=r&sv=2026-02-06&sr=b&scid=5cbd2684-8f60-5112-9cd4-628f411570d5&skoid=6658dbdd-f305-4d30-8f6b-d62218202cb9&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-07-29T07:10:42Z&ske=2026-07-31T07:10:42Z&sks=b&skv=2026-02-06&sig=HU//NzkA0/jWvB8he%2BrOivJGRU%2BELIzjze%2BB87lXQfI%3D' public/assets/reference/cap-technical.jpg 1aabd38509bf3836aec88fbb12f99d1d74e738ad80940212d9d632f0b97101db
+          fetch 'https://sdmntprukwest.oaiusercontent.com/files/00000000-5eac-8243-8e7a-27ad9dd84dfa/raw?se=2026-07-29T16:14:39Z&sp=r&sv=2026-02-06&sr=b&scid=93f9cc02-da71-5c64-bc41-f9e5e8840c52&skoid=6658dbdd-f305-4d30-8f6b-d62218202cb9&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-07-29T05:52:47Z&ske=2026-07-31T05:52:47Z&sks=b&skv=2026-02-06&sig=GBXNBZWL8xIa9RfjGUzSp%2B7dzKKWaLJTq59jlT7kqJs%3D' public/assets/reference/cap-telecom.jpg d184cb1a24bed096ce8d700d90f788c182123f8b01473dbdc6eec6cf1dd67151
+          fetch 'https://sdmntprukwest.oaiusercontent.com/files/00000000-34a8-8243-b2ce-52d11e155c66/raw?se=2026-07-29T16:14:47Z&sp=r&sv=2026-02-06&sr=b&scid=3bd257eb-0a09-515f-a86e-6b54dc873aa7&skoid=6658dbdd-f305-4d30-8f6b-d62218202cb9&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-07-29T07:38:44Z&ske=2026-07-31T07:38:44Z&sks=b&skv=2026-02-06&sig=ZxnpfXNCOtJzpSPOtnkqMU6enpRyISk7mCfXWivFG5s%3D' public/assets/reference/hero-team.jpg f77112ca3e74ace91738a5e5e5901a663100a579bdf7e256d51b1f1955674195
+          fetch 'https://sdmntprukwest.oaiusercontent.com/files/00000000-c9e8-8243-823c-1bca18436725/raw?se=2026-07-29T16:16:32Z&sp=r&sv=2026-02-06&sr=b&scid=f8b1b440-d9d3-564f-ab60-0dd4a8c557cb&skoid=6658dbdd-f305-4d30-8f6b-d62218202cb9&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-07-29T07:10:44Z&ske=2026-07-31T07:10:44Z&sks=b&skv=2026-02-06&sig=oH/wt/9C8OPatvwuwAxfmjKiop/ClA2RC2sNFJs4uPA%3D' public/assets/reference/hero-tower.jpg bb80cdfb1606042910e4314e1991bd24ab248b6cff67516e097afcd15ba8d0d1
+          cp public/assets/reference/hero-tower.jpg public/assets/reference/hero-tower-clean.jpg
+          test "$(sha256sum public/assets/reference/hero-tower-clean.jpg | awk '{print $1}')" = bb80cdfb1606042910e4314e1991bd24ab248b6cff67516e097afcd15ba8d0d1
+          rm -rf asset-data
+          rm -f .github/workflows/materialize-assets.yml
+      - name: Commit materialised assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Store approved website assets directly'
+          git push origin HEAD:agent/production-site-foundation

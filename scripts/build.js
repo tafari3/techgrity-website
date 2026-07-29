@@ -1,13 +1,11 @@
 'use strict';
-const fs=require('fs');const path=require('path');const zlib=require('zlib');
+const fs=require('fs');const path=require('path');
 const root=path.resolve(__dirname,'..');const dist=path.join(root,'dist');
 const {digitalCapabilities,infrastructureCapabilities,industries}=require('../src/content');
 const T=require('../src/templates');
 function rm(p){fs.rmSync(p,{recursive:true,force:true})}function copy(src,dst){fs.mkdirSync(dst,{recursive:true});for(const ent of fs.readdirSync(src,{withFileTypes:true})){const a=path.join(src,ent.name),b=path.join(dst,ent.name);ent.isDirectory()?copy(a,b):fs.copyFileSync(a,b)}}
 function writeRoute(route,html){const dir=route==='/'?dist:path.join(dist,route.replace(/^\//,'').replace(/\/$/,''));fs.mkdirSync(dir,{recursive:true});fs.writeFileSync(path.join(dir,'index.html'),html)}
 rm(dist);copy(path.join(root,'public'),dist);
-const assetData=path.join(root,'asset-data');
-if(fs.existsSync(assetData)){for(const name of fs.readdirSync(assetData).filter(x=>x.endsWith('.json.gz')).sort()){const entries=JSON.parse(zlib.gunzipSync(fs.readFileSync(path.join(assetData,name))));for(const [relative,encoded] of Object.entries(entries)){const target=path.join(dist,relative);fs.mkdirSync(path.dirname(target),{recursive:true});fs.writeFileSync(target,Buffer.from(encoded,'base64'));}}}
 let home=fs.readFileSync(path.join(root,'src/homepage.html'),'utf8');
 const replacements=[['/digital-systems/','/capabilities/digital-systems/'],['/infrastructure/','/capabilities/infrastructure/'],['/technology-supply/','/capabilities/technology-supply/'],['/delivery/','/how-we-deliver/']];
 for(const [a,b] of replacements)home=home.split(a).join(b);
