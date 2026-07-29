@@ -3,32 +3,39 @@
 **Status:** ACTIVE  
 **Opened:** 29 July 2026
 
-This register records the approval state of the 13 authoritative master page templates. An `APPROVED` entry requires both desktop and mobile references, recorded review notes and an explicit approval date.
+This register records the approval state of the 13 authoritative master page templates. An `APPROVED` entry requires desktop and mobile references, recorded review notes and an explicit approval date.
 
-| # | Master template | Desktop reference | Mobile reference | Status | Approval date | Notes |
-|---:|---|---|---|---|---|---|
-| 1 | Homepage | existing verified reference | existing verified reference | `APPROVED` | 29 July 2026 | Controlling visual benchmark; repository asset import still required. |
-| 2 | Capabilities overview | not produced | not produced | `NOT STARTED` | — | Wave 1 |
-| 3 | Digital Systems landing | not produced | not produced | `NOT STARTED` | — | Wave 1 |
-| 4 | Digital capability detail | not produced | not produced | `NOT STARTED` | — | Wave 2 |
-| 5 | Infrastructure landing | not produced | not produced | `NOT STARTED` | — | Wave 1 |
-| 6 | Infrastructure capability detail | not produced | not produced | `NOT STARTED` | — | Wave 2 |
-| 7 | Technology Supply & Integration | not produced | not produced | `NOT STARTED` | — | Wave 2 |
-| 8 | Industries overview | not produced | not produced | `NOT STARTED` | — | Wave 3 |
-| 9 | Industry detail | not produced | not produced | `NOT STARTED` | — | Wave 3 |
-| 10 | How We Deliver | not produced | not produced | `NOT STARTED` | — | Wave 3 |
-| 11 | Company | not produced | not produced | `NOT STARTED` | — | Wave 4 |
-| 12 | Resources | not produced | not produced | `NOT STARTED` | — | Wave 4 |
-| 13 | Contact and enquiry forms | not produced | not produced | `NOT STARTED` | — | Wave 4 |
+| # | Master template | Reference identity | Status | Approval date | Notes |
+|---:|---|---|---|---|---|
+| 1 | Homepage | existing verified desktop and mobile references | `APPROVED` | 29 July 2026 | Controlling visual benchmark; repository asset import remains tracked. |
+| 2 | Capabilities overview | `visuals/wave-1-reference-manifest.md` | `APPROVED` | 29 July 2026 | Real HTML/CSS prototype; desktop, tablet, mobile and full-page renders passed QA. |
+| 3 | Digital Systems landing | `visuals/wave-1-reference-manifest.md` | `APPROVED` | 29 July 2026 | Real HTML/CSS prototype; desktop, tablet, mobile and full-page renders passed QA. |
+| 4 | Digital capability detail | not produced | `NOT STARTED` | — | Wave 2 |
+| 5 | Infrastructure landing | `visuals/wave-1-reference-manifest.md` | `APPROVED` | 29 July 2026 | Real HTML/CSS prototype; desktop, tablet, mobile and full-page renders passed QA. |
+| 6 | Infrastructure capability detail | not produced | `NOT STARTED` | — | Wave 2 |
+| 7 | Technology Supply & Integration | not produced | `NOT STARTED` | — | Wave 2 |
+| 8 | Industries overview | not produced | `NOT STARTED` | — | Wave 3 |
+| 9 | Industry detail | not produced | `NOT STARTED` | — | Wave 3 |
+| 10 | How We Deliver | not produced | `NOT STARTED` | — | Wave 3 |
+| 11 | Company | not produced | `NOT STARTED` | — | Wave 4 |
+| 12 | Resources | not produced | `NOT STARTED` | — | Wave 4 |
+| 13 | Contact and enquiry forms | not produced | `NOT STARTED` | — | Wave 4 |
+
+## Wave 1 approval evidence
+
+- approval decision: [`../visuals/wave-1-approval.md`](../visuals/wave-1-approval.md);
+- QA report: [`../visuals/wave-1-qa-report.md`](../visuals/wave-1-qa-report.md);
+- deterministic reference manifest: [`../visuals/wave-1-reference-manifest.md`](../visuals/wave-1-reference-manifest.md);
+- prototype source: [`../visuals/prototypes/`](../visuals/prototypes/).
 
 ## Approval record requirements
 
-For each master template, replace the placeholder entry only after recording:
+For each remaining master template, record:
 
-- exact desktop reference path;
-- exact mobile reference path;
-- tablet behaviour note path;
-- source or prompt provenance for generated assets;
+- exact desktop reference identity;
+- exact mobile reference identity;
+- tablet behaviour evidence or notes;
+- source or generated-asset provenance;
 - image and diagram asset register;
 - review notes against the content and visual specifications;
 - accessibility risks and resolutions;
