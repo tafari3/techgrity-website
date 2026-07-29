@@ -16,6 +16,7 @@ This directory is the authoritative source of truth for the Techgrity Systems co
 | [`07-factual-information-register.md`](07-factual-information-register.md) | **Active control register** | Records confirmed, provisional, blocked, omitted and future facts and controls all public claims. |
 | [`08-visual-functional-acceptance-checklist.md`](08-visual-functional-acceptance-checklist.md) | **Baseline complete** | Defines evidence required for master visuals, implementation, accessibility, forms, SEO, security, performance and production commissioning. |
 | [`09-master-visual-production-plan.md`](09-master-visual-production-plan.md) | **Ready for execution** | Defines production waves, required desktop/mobile outputs, review method, asset structure and implementation handoff conditions for all 13 master templates. |
+| [`10-design-stage-decision-log.md`](10-design-stage-decision-log.md) | **Active** | Records material cross-page design, integration and evidence-boundary decisions. |
 
 ## Programme status
 
@@ -31,7 +32,8 @@ This directory is the authoritative source of truth for the Techgrity Systems co
 - functional and integration contract complete;
 - factual-information control register established;
 - visual and functional acceptance checklist complete;
-- master-visual production sequence and approval method defined.
+- master-visual production sequence and approval method defined;
+- design-stage decision logging established.
 
 ### Next controlled stage
 
