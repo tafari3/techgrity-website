@@ -25,8 +25,8 @@ Rendered evidence:
 
 | Artifact | Dimensions | SHA-256 |
 |---|---:|---|
-| `industry-detail-desktop-1672x941.png` | 1672 × 941 | `c73344b1cf88438b173a5b38df4fbe00dbc778a7de84a1f1024d635ed6cdab50` |
-| `industry-detail-full.png` | 1672 × 4157 | `e335b0e1712faf7265ed9d670fa0d0d8aa2a97d929c83e3aabeedf05650ca389` |
+| `industry-detail-desktop-1672x941.png` | 1672 × 941 | `b92852a12097cf167b35cca1722262c347b7db300009455a8284618b478c1807` |
+| `industry-detail-full.png` | 1672 × 4157 | `c8c26f4f2737eeeeb91abc78d56b3784d043d1b136631b100b3c2cf8809f8e5f` |
 
 ## How We Deliver reference
 
@@ -42,8 +42,8 @@ Rendered evidence:
 
 | Artifact | Dimensions | SHA-256 |
 |---|---:|---|
-| `how-we-deliver-desktop-1672x941.png` | 1672 × 941 | `260a1b5b8b991d3b7128d4e5daf0ca64dba23f4cfda092242176fc4b0d29f64f` |
-| `how-we-deliver-full.png` | 1672 × 4121 | `d687bc860352d5851dee82c8a511712f1ebfb3f76c08eee00c207a6ab55dfeb0` |
+| `how-we-deliver-desktop-1672x941.png` | 1672 × 941 | `e6906bc7e150e4cd13d20c42c8f286a54de7a86e53306c93a8a3fa1cd3533872` |
+| `how-we-deliver-full.png` | 1672 × 4121 | `2ee82422726e0fb78c54a41b4006fe4d6fb6c73f86c95c1621ec941060f95e57` |
 
 ## Internal QA
 
