@@ -10,7 +10,7 @@ This register records the approval state of the 13 authoritative master page tem
 | 1 | Homepage | existing verified desktop reference | `APPROVED` | 29 July 2026 | User reviewed the desktop reference and directed the programme to proceed. |
 | 2 | Capabilities overview | `visuals/wave-1-reference-manifest.md` | `APPROVED` | 29 July 2026 | User reviewed the desktop reference; internal responsive QA also passed. |
 | 3 | Digital Systems landing | `visuals/wave-1-reference-manifest.md` | `APPROVED` | 29 July 2026 | User reviewed the desktop reference; internal responsive QA also passed. |
-| 4 | Digital capability detail | not produced | `NOT STARTED` | — | Wave 2 |
+| 4 | Digital capability detail | `visuals/wave-2/digital-capability-detail-reference.md` | `READY FOR USER REVIEW` | — | Representative Software, AI & Enterprise Applications desktop reference produced. |
 | 5 | Infrastructure landing | `visuals/wave-1-reference-manifest.md` | `APPROVED` | 29 July 2026 | User reviewed the desktop reference; internal responsive QA also passed. |
 | 6 | Infrastructure capability detail | not produced | `NOT STARTED` | — | Wave 2 |
 | 7 | Technology Supply & Integration | not produced | `NOT STARTED` | — | Wave 2 |
