@@ -1,0 +1,4 @@
+Production deployment trigger for Techgrity website remediation.
+Source tree: PR #14 merged as f41015708fd43d51165256e525e9b952cb8f9819.
+Triggered at 2026-07-30 11:23 Africa/Harare.
+This file is outside the generated website output and does not alter runtime content.
