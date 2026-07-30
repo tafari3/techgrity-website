@@ -7,8 +7,6 @@ function rm(p){fs.rmSync(p,{recursive:true,force:true})}function copy(src,dst){f
 function writeRoute(route,html){const dir=route==='/'?dist:path.join(dist,route.replace(/^\//,'').replace(/\/$/,''));fs.mkdirSync(dir,{recursive:true});fs.writeFileSync(path.join(dir,'index.html'),html)}
 rm(dist);copy(path.join(root,'public'),dist);
 let home=fs.readFileSync(path.join(root,'src/homepage.html'),'utf8');
-const replacements=[['/digital-systems/','/capabilities/digital-systems/'],['/infrastructure/','/capabilities/infrastructure/'],['/technology-supply/','/capabilities/technology-supply/'],['/delivery/','/how-we-deliver/']];
-for(const [a,b] of replacements)home=home.split(a).join(b);
 home=home.replaceAll('href="/contact/">Discuss a Project','href="/discuss-a-project/">Discuss a Project');
 home=home.replaceAll('2367 Lavenham Road, Westgate, Harare, Zimbabwe','Harare, Zimbabwe');
 home=home.replaceAll('2367 Lavenham Road<br />Westgate, Harare<br />Zimbabwe','Harare, Zimbabwe');
