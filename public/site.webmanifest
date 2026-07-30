@@ -1,9 +1,13 @@
 {
   "name": "Techgrity Systems",
   "short_name": "Techgrity",
+  "description": "Digital systems and critical infrastructure from Techgrity Systems.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#F7FAFC",
   "theme_color": "#031A45",
-  "icons": [{ "src": "/assets/favicon.png", "sizes": "512x512", "type": "image/png" }]
+  "icons": [
+    { "src": "/assets/techgrity-mark.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
 }
