@@ -79,8 +79,9 @@ main [id]{scroll-margin-top:116px}
 .site-header{isolation:isolate}
 .page-hero,.section,.final-cta{isolation:isolate}
 
-/* Touch targets remain usable without making the footer visually heavy. */
-.footer-column a,.footer-legal a,.footer-bottom a{min-height:44px;display:inline-flex;align-items:center}
+/* Touch targets remain usable while footer navigation stays vertically stacked. */
+.footer-column a{min-height:44px;display:flex;align-items:center}
+.footer-legal a,.footer-bottom a{min-height:44px;display:inline-flex;align-items:center}
 .cookie-manage{min-height:44px}
 .breadcrumbs a{min-height:40px;display:inline-flex;align-items:center}
 
