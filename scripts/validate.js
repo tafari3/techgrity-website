@@ -25,10 +25,10 @@ for(const route of ['/','/contact/']){const html=fs.readFileSync(routeToFile(rou
 const cssFiles=files.filter(f=>f.endsWith('.css'));for(const f of cssFiles){const css=fs.readFileSync(f,'utf8');let depth=0;for(const c of css){if(c==='{')depth++;if(c==='}')depth--;if(depth<0)break}if(depth!==0)errors.push(`${path.relative(dist,f)}: unbalanced braces (${depth})`);if(/var\(--[a-z0-9-]+\}/i.test(css))errors.push(`${path.relative(dist,f)}: malformed CSS var()`)}
 const sitemap=fs.readFileSync(path.join(dist,'sitemap.xml'),'utf8');if((sitemap.match(/<url>/g)||[]).length!==31)errors.push('sitemap does not contain 31 URLs');
 const expectedAssets={
- 'assets/techgrity-logo.svg':'6117fb82f1b50eedd49032afe77158c54ee60961110975e7cddd867979d2de76',
- 'assets/techgrity-logo-light.svg':'91b8b740a62c039a26d5f910cc2ead7f8bbcc25938c45d13750756f0d1a5e084',
- 'assets/techgrity-mark.svg':'d76121aeb34de0c7e4bd3c15caf204444dce26a4b4c6439d054961bc59c8165c',
- 'assets/favicon.ico':'c7110d6a411f5c401e171d03bee351015911710a5063aa0d62eacab87121b07e',
+ 'assets/techgrity-logo.svg':'acceec2d4702e15724fbeb28a6ccbdb60111b65efc0b89bd4ee55eedba27dccf',
+ 'assets/techgrity-logo-light.svg':'9543ef6572bd4d38e4bd96ae047e0de995581f5a6d18a990bf4688d08a485ff4',
+ 'assets/techgrity-mark.svg':'4e366ba08e250c25677716e6d9451618a3539a8b270600316ff33eada4e246e9',
+ 'assets/favicon.ico':'b161eea8f67f4914d5f2076ec456778d8083d8992dcf67cf16ea2ac1de562112',
  'assets/favicon-16x16.png':'7b93681e449cb1bd829dd58d167c2a6af82c436b67ad0737847a92822925bf46',
  'assets/favicon-32x32.png':'e50cc5a53c4adec3bebd0b28964e951740948b2f04386cf780648a7bfe799695',
  'assets/apple-touch-icon.png':'bfb308821d46289e8275f36b732ee5bf17b3df13403c4379aef080eeaedf0f0f'
