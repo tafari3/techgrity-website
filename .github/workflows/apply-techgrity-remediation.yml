@@ -56,13 +56,24 @@ jobs:
           echo '6378b63e5f9e96fa7bb027f6da26ddf0c7b93e59785ddf577b16f4fc7d7a5eeb  /tmp/techgrity-remediation.patch.gz.b64' | sha256sum --check -
           base64 --decode /tmp/techgrity-remediation.patch.gz.b64 | gzip --decompress > /tmp/techgrity-remediation.patch
           echo 'e869da3a84e858f53da45548a82febeb704c7c57aec3414fc26392c9a90a3047  /tmp/techgrity-remediation.patch' | sha256sum --check -
-          git apply --check -p1 /tmp/techgrity-remediation.patch
+          echo '52d3b33cd3fce45bd2a3519d2bf34ef0f170eedd5a0d24cbcce6c5b8775a37a7  scripts/build.js' | sha256sum --check -
+          git apply --check -p1 --exclude=scripts/build.js /tmp/techgrity-remediation.patch
 
-      - name: Apply tested source and remove transport
+      - name: Apply tested source and reconcile exact build baseline
         shell: bash
         run: |
           set -euo pipefail
-          git apply -p1 /tmp/techgrity-remediation.patch
+          git apply -p1 --exclude=scripts/build.js /tmp/techgrity-remediation.patch
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('scripts/build.js')
+          source = path.read_text()
+          block = "const replacements=[['/digital-systems/','/capabilities/digital-systems/'],['/infrastructure/','/capabilities/infrastructure/'],['/technology-supply/','/capabilities/technology-supply/'],['/delivery/','/how-we-deliver/']];\nfor(const [a,b] of replacements)home=home.split(a).join(b);\n"
+          if source.count(block) != 1:
+              raise SystemExit('scripts/build.js exact route-normalisation block was not found once')
+          path.write_text(source.replace(block, ''))
+          PY
+          echo 'a2912fe75a4d3402ad9b21211ebd8d190ef28d4da3b300ea82aeedfd4945507d  scripts/build.js' | sha256sum --check -
           rm -f .automation/techgrity-remediation.patch.*
           rmdir .automation
           rm -f .github/workflows/apply-techgrity-remediation.yml
