@@ -1,0 +1,79 @@
+name: Apply Techgrity Remediation
+
+on:
+  push:
+    branches:
+      - fix/exhaustive-site-remediation
+    paths:
+      - .automation/techgrity-remediation.patch.*
+      - .github/workflows/apply-techgrity-remediation.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apply-techgrity-remediation
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact remediation branch
+        uses: actions/checkout@v4
+        with:
+          ref: fix/exhaustive-site-remediation
+          fetch-depth: 0
+
+      - name: Verify and reconstruct patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/chunks.sha256 <<'EOF'
+          cad75f8537cf60d5be0a8f4122c437561e9847179caa8234c51611a1583bc205  .automation/techgrity-remediation.patch.00
+          1d994871fe46f246a7ac56093d11dbf656752c8730533ac8944341a213af3965  .automation/techgrity-remediation.patch.01
+          3526caf64f4036c8de751e160c786ee821ebd3c5e8746a19c768c6648a6657de  .automation/techgrity-remediation.patch.02
+          de60f4ca620785e486cfd69e73e06d9073e822981c969d3178563b68806e6434  .automation/techgrity-remediation.patch.03
+          eb66d739991aad4e78a301f424bd88d1b13b3ab5c07393f142ee8d8c6a033958  .automation/techgrity-remediation.patch.04
+          7f2f6f31d26a26c50d73547140f1e6e38b810568dbea055f45e42bb8a85ac35f  .automation/techgrity-remediation.patch.05
+          7e6ed5e85ed74ef3837dde8caeced403ab9595120d4cf34f738e13051e8bec8d  .automation/techgrity-remediation.patch.06
+          0c52c85ac202a63c69cb27b023a83a90b7ba91c4c89878aecdda8bf0b78f3d47  .automation/techgrity-remediation.patch.07
+          eb5ad501b2015b73596638e90abca8f07dad2882fa16cdb337fd4481160d90dc  .automation/techgrity-remediation.patch.08
+          101bd7b424d686b5b0bcc4ce14bc225f4c4aa080e5a36ecb5aeaf2ced13981e3  .automation/techgrity-remediation.patch.09
+          213a4d588308b9f38b7d8a0e41b5487951ab20be49b2913a115d018eb75ca60b  .automation/techgrity-remediation.patch.10
+          EOF
+          sha256sum --check /tmp/chunks.sha256
+          cat .automation/techgrity-remediation.patch.* > /tmp/techgrity-remediation.patch.gz.b64
+          echo '6378b63e5f9e96fa7bb027f6da26ddf0c7b93e59785ddf577b16f4fc7d7a5eeb  /tmp/techgrity-remediation.patch.gz.b64' | sha256sum --check -
+          base64 --decode /tmp/techgrity-remediation.patch.gz.b64 | gzip --decompress > /tmp/techgrity-remediation.patch
+          echo 'e869da3a84e858f53da45548a82febeb704c7c57aec3414fc26392c9a90a3047  /tmp/techgrity-remediation.patch' | sha256sum --check -
+          git apply --check -p1 /tmp/techgrity-remediation.patch
+
+      - name: Apply tested source and remove transport
+        shell: bash
+        run: |
+          set -euo pipefail
+          git apply -p1 /tmp/techgrity-remediation.patch
+          rm -f .automation/techgrity-remediation.patch.*
+          rmdir .automation
+          rm -f .github/workflows/apply-techgrity-remediation.yml
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Validate remediated source
+        run: npm ci && npm test
+
+      - name: Commit remediated production source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'Techgrity Release Automation'
+          git config user.email 'actions@users.noreply.github.com'
+          git add -A
+          git commit -m 'Remediate website experience'
+          git push origin HEAD:fix/exhaustive-site-remediation
