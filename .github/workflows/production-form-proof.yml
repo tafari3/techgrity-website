@@ -1,0 +1,174 @@
+name: Controlled production commissioning proof
+
+on:
+  push:
+    branches:
+      - ops/production-form-proof-20260730
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  production-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Verify live routes, headers and form delivery acceptance
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          mkdir -p proof
+          base='https://techgrity.co.zw'
+          printf 'started_utc=%s\n' "$(date -u +%FT%TZ)" | tee proof/run.txt
+          printf 'source_sha=%s\n' '67d82602b5f27a9e46af0599b0018b1722ffaba8' | tee -a proof/run.txt
+
+          public_routes=(
+            '/'
+            '/capabilities/'
+            '/capabilities/digital-systems/'
+            '/capabilities/digital-systems/software-ai-applications/'
+            '/capabilities/digital-systems/automation/'
+            '/capabilities/digital-systems/integration/'
+            '/capabilities/digital-systems/data-analytics/'
+            '/capabilities/digital-systems/cybersecurity-access/'
+            '/capabilities/infrastructure/'
+            '/capabilities/infrastructure/networks-fibre/'
+            '/capabilities/infrastructure/data-centres-cloud/'
+            '/capabilities/infrastructure/telecom-radio/'
+            '/capabilities/infrastructure/power-energy/'
+            '/capabilities/infrastructure/security-smart-facilities/'
+            '/capabilities/infrastructure/civil-technical-works/'
+            '/capabilities/technology-supply/'
+            '/industries/'
+            '/industries/government-public-sector/'
+            '/industries/education-research/'
+            '/industries/telecommunications/'
+            '/industries/energy-utilities-industrial/'
+            '/industries/data-centres-technology/'
+            '/industries/commerce-logistics-growing-organisations/'
+            '/how-we-deliver/'
+            '/company/'
+            '/resources/'
+            '/contact/'
+            '/discuss-a-project/'
+            '/privacy/'
+            '/terms/'
+            '/cookies/'
+          )
+          system_routes=(
+            '/project-enquiry-received/'
+            '/document-request-received/'
+            '/form-error/'
+          )
+
+          : > proof/routes.tsv
+          for route in "${public_routes[@]}" "${system_routes[@]}"; do
+            status="$(curl --silent --show-error --location --output /dev/null --write-out '%{http_code}' "$base$route")"
+            printf '%s\t%s\n' "$status" "$route" | tee -a proof/routes.tsv
+            test "$status" = '200'
+          done
+          not_found_status="$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' "$base/404/")"
+          printf '%s\t%s\n' "$not_found_status" '/404/' | tee -a proof/routes.tsv
+          test "$not_found_status" = '404'
+
+          curl --silent --show-error --dump-header proof/apex.headers --output /dev/null "$base/"
+          grep -Eiq '^strict-transport-security: max-age=63072000' proof/apex.headers
+          grep -Eiq '^content-security-policy:' proof/apex.headers
+          grep -Eiq '^x-content-type-options: nosniff' proof/apex.headers
+          grep -Eiq '^referrer-policy: strict-origin-when-cross-origin' proof/apex.headers
+          grep -Eiq '^permissions-policy:' proof/apex.headers
+
+          curl --silent --show-error --head --dump-header proof/www.headers --output /dev/null 'https://www.techgrity.co.zw/'
+          grep -Eq '^HTTP/[^ ]+ 308' proof/www.headers
+          grep -Eiq '^location: https://techgrity\.co\.zw/' proof/www.headers
+
+          started_at="$(( $(date +%s%3N) - 5000 ))"
+          contact_payload="$(jq -n \
+            --arg name 'Techgrity Production Proof — Contact' \
+            --arg organisation 'Techgrity Systems' \
+            --arg email 'website@techgrity.co.zw' \
+            --arg telephone '+263783304307' \
+            --arg category 'General business enquiry' \
+            --arg message 'CONTROLLED PRODUCTION COMMISSIONING PROOF: contact endpoint, SMTP acceptance and received-message verification.' \
+            --arg startedAt "$started_at" \
+            '{name:$name,organisation:$organisation,email:$email,telephone:$telephone,category:$category,message:$message,privacyConsent:true,website:"",startedAt:$startedAt,formType:"contact"}')"
+          contact_status="$(curl --silent --show-error --dump-header proof/contact.headers --output proof/contact.json --write-out '%{http_code}' \
+            --request POST "$base/api/contact" \
+            --header 'Content-Type: application/json' \
+            --header 'Referer: https://techgrity.co.zw/contact/' \
+            --header 'Sec-Fetch-Site: same-origin' \
+            --data "$contact_payload")"
+          printf 'contact_status=%s\n' "$contact_status" | tee -a proof/run.txt
+          cat proof/contact.json
+          test "$contact_status" = '200'
+          jq -e '.ok == true and (.reference | startswith("TGS-GEN-"))' proof/contact.json >/dev/null
+
+          sleep 2
+          started_at="$(( $(date +%s%3N) - 5000 ))"
+          project_payload="$(jq -n \
+            --arg projectName 'Techgrity Production Proof — Project' \
+            --arg projectOrganisation 'Techgrity Systems' \
+            --arg projectRole 'Production commissioning operator' \
+            --arg projectEmail 'website@techgrity.co.zw' \
+            --arg projectTelephone '+263783304307' \
+            --arg projectCountry 'Zimbabwe' \
+            --arg projectCategory 'Integrated or multi-capability project' \
+            --arg projectIndustry 'Data Centres & Technology' \
+            --arg projectLocation 'Harare, Zimbabwe' \
+            --arg projectDescription 'CONTROLLED PRODUCTION COMMISSIONING PROOF: project endpoint and SMTP delivery path.' \
+            --arg expectedOutcomes 'HTTP success, reference generation and delivery to business@techgrity.co.zw.' \
+            --arg currentEnvironment 'Production website on the exact Vercel project and official domain.' \
+            --arg timescale 'Commissioning verification only' \
+            --arg procurementStatus 'No procurement — controlled proof submission' \
+            --arg startedAt "$started_at" \
+            '{projectName:$projectName,projectOrganisation:$projectOrganisation,projectRole:$projectRole,projectEmail:$projectEmail,projectTelephone:$projectTelephone,projectCountry:$projectCountry,projectCategory:$projectCategory,projectIndustry:$projectIndustry,projectLocation:$projectLocation,projectDescription:$projectDescription,expectedOutcomes:$expectedOutcomes,currentEnvironment:$currentEnvironment,timescale:$timescale,procurementStatus:$procurementStatus,privacyConsent:true,website:"",startedAt:$startedAt,formType:"project"}')"
+          project_status="$(curl --silent --show-error --dump-header proof/project.headers --output proof/project.json --write-out '%{http_code}' \
+            --request POST "$base/api/project" \
+            --header 'Content-Type: application/json' \
+            --header 'Referer: https://techgrity.co.zw/discuss-a-project/' \
+            --header 'Sec-Fetch-Site: same-origin' \
+            --data "$project_payload")"
+          printf 'project_status=%s\n' "$project_status" | tee -a proof/run.txt
+          cat proof/project.json
+          test "$project_status" = '200'
+          jq -e '.ok == true and (.reference | startswith("TGS-PRJ-")) and (.redirect == "/project-enquiry-received/")' proof/project.json >/dev/null
+
+          sleep 2
+          started_at="$(( $(date +%s%3N) - 5000 ))"
+          document_payload="$(jq -n \
+            --arg requestName 'Techgrity Production Proof — Document' \
+            --arg requestOrganisation 'Techgrity Systems' \
+            --arg requestRole 'Production commissioning operator' \
+            --arg requestEmail 'website@techgrity.co.zw' \
+            --arg requestCountry 'Zimbabwe' \
+            --arg document 'Techgrity capability statement' \
+            --arg reason 'CONTROLLED PRODUCTION COMMISSIONING PROOF: document-request endpoint and SMTP delivery path.' \
+            --arg startedAt "$started_at" \
+            '{requestName:$requestName,requestOrganisation:$requestOrganisation,requestRole:$requestRole,requestEmail:$requestEmail,requestCountry:$requestCountry,document:$document,reason:$reason,privacyConsent:true,website:"",startedAt:$startedAt,formType:"document-request"}')"
+          document_status="$(curl --silent --show-error --dump-header proof/document-request.headers --output proof/document-request.json --write-out '%{http_code}' \
+            --request POST "$base/api/document-request" \
+            --header 'Content-Type: application/json' \
+            --header 'Referer: https://techgrity.co.zw/resources/' \
+            --header 'Sec-Fetch-Site: same-origin' \
+            --data "$document_payload")"
+          printf 'document_status=%s\n' "$document_status" | tee -a proof/run.txt
+          cat proof/document-request.json
+          test "$document_status" = '200'
+          jq -e '.ok == true and (.reference | startswith("TGS-DOC-")) and (.redirect == "/document-request-received/")' proof/document-request.json >/dev/null
+
+          jq -n \
+            --slurpfile contact proof/contact.json \
+            --slurpfile project proof/project.json \
+            --slurpfile document proof/document-request.json \
+            '{contact:$contact[0],project:$project[0],documentRequest:$document[0]}' > proof/references.json
+          printf 'completed_utc=%s\n' "$(date -u +%FT%TZ)" | tee -a proof/run.txt
+
+      - name: Upload production proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-commissioning-proof
+          path: proof/
+          if-no-files-found: error
+          retention-days: 7
