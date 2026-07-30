@@ -8,6 +8,6 @@
   "background_color": "#F7FAFC",
   "theme_color": "#031A45",
   "icons": [
-    { "src": "/assets/techgrity-mark.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+    { "src": "/assets/techgrity-mark.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
   ]
 }
