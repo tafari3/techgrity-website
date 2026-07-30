@@ -32,7 +32,7 @@ const mark=fs.readFileSync(path.join(dist,'assets','techgrity-mark.svg'),'utf8')
 if(!/<text[^>]*>TECHGRITY<\/text>/.test(primary)||!/<text[^>]*>SYSTEMS<\/text>/.test(primary))errors.push('primary logo does not contain the complete TECHGRITY SYSTEMS wordmark');
 if(primary.includes('fill="#FFFFFF"')||primary.includes('fill="#fff"'))errors.push('primary logo contains an unintended white filled panel');
 if(!light.includes('fill="#FFFFFF"')||!/<text[^>]*>SYSTEMS<\/text>/.test(light))errors.push('light footer logo is incomplete');
-if(!mark.includes('viewBox="0 0 430 320"')||/<text[^>]*>TECHGRITY<\/text>/.test(mark))errors.push('favicon mark is not the isolated TG monogram');
+if(!mark.includes('viewBox="0 -55 430 430"')||/<text[^>]*>TECHGRITY<\/text>/.test(mark))errors.push('favicon mark is not the isolated square TG monogram');
 const expectedDir=fs.mkdtempSync(path.join(os.tmpdir(),'techgrity-brand-'));
 try{
  fs.copyFileSync(path.join(root,'public','assets','techgrity-logo.svg'),path.join(expectedDir,'techgrity-logo.svg'));
