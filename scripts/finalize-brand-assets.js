@@ -6,7 +6,7 @@ module.exports=function finalizeBrandAssets(targetDir){
   const light=primary.replaceAll('#071D49','#FFFFFF');
   fs.writeFileSync(path.join(targetDir,'techgrity-logo-light.svg'),light);
   const mark=primary
-    .replace('viewBox="0 0 1500 320"','viewBox="0 0 430 320"')
+    .replace('viewBox="0 0 1500 320"','viewBox="0 -55 430 430"')
     .replace('<title id="title">Techgrity Systems</title>','<title id="title">Techgrity Systems TG monogram</title>')
     .replace('<desc id="desc">Techgrity Systems wordmark with a navy and teal TG monogram.</desc>','<desc id="desc">Techgrity Systems TG monogram.</desc>')
     .replace(/\s*<rect x="466"[\s\S]*?\/>/,'')
