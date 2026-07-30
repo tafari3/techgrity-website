@@ -58,6 +58,7 @@ jobs:
           done
           curl --fail --silent --show-error http://127.0.0.1:4173/healthz
           AUDIT_BASE_URL=http://127.0.0.1:4173 python scripts/exhaustive-candidate-audit.py
+          AUDIT_BASE_URL=http://127.0.0.1:4173 python scripts/review-regression-audit.py
 
       - name: Upload browser evidence
         if: always()
