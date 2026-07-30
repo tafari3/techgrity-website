@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 320" role="img" aria-labelledby="title desc">
+  <title id="title">Techgrity Systems</title>
+  <desc id="desc">Techgrity Systems wordmark with a navy and teal TG monogram.</desc>
+  <g aria-hidden="true">
+    <path fill="#071D49" d="M22 24h276c48 0 88 15 121 46l-43 43c-23-21-49-31-80-31H174v59l-59 59V82H52z"/>
+    <path fill="#071D49" d="M164 92c-28 25-43 56-43 92 0 67 48 115 116 115 43 0 78-13 105-39l-41-45c-17 16-37 24-62 24-36 0-61-24-61-58 0-18 6-34 18-48z"/>
+    <path fill="#0D9488" d="M244 134h151v116l-61 57V190h-90z"/>
+    <rect x="466" y="30" width="6" height="260" rx="3" fill="#0D9488"/>
+    <text x="540" y="151" fill="#071D49" font-family="Arial, Helvetica, sans-serif" font-size="112" font-weight="700" letter-spacing="18">TECHGRITY</text>
+    <text x="558" y="264" fill="#0D9488" font-family="Arial, Helvetica, sans-serif" font-size="60" font-weight="600" letter-spacing="36">SYSTEMS</text>
+  </g>
+</svg>

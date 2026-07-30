@@ -11,7 +11,7 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 45
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -43,11 +43,30 @@ jobs:
       - name: Run browser QA
         run: python scripts/browser-qa.py
 
+      - name: Run exhaustive exact-head candidate audit
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          npm run serve > /tmp/techgrity-site.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for attempt in {1..30}; do
+            if curl --fail --silent --show-error http://127.0.0.1:4173/healthz >/dev/null; then
+              break
+            fi
+            sleep 1
+          done
+          curl --fail --silent --show-error http://127.0.0.1:4173/healthz
+          AUDIT_BASE_URL=http://127.0.0.1:4173 python scripts/exhaustive-candidate-audit.py
+          AUDIT_BASE_URL=http://127.0.0.1:4173 python scripts/review-regression-audit.py
+
       - name: Upload browser evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: website-browser-evidence
-          path: evidence/runtime/
+          path: |
+            evidence/runtime/
+            evidence/candidate-audit/
           if-no-files-found: warn
           retention-days: 14
