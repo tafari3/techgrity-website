@@ -48,16 +48,23 @@ with sync_playwright() as p:
         response = page.goto(f"{BASE}{route}", wait_until="domcontentloaded", timeout=20_000)
         page.wait_for_timeout(60)
         footer = page.evaluate(
-            """() => [...document.querySelectorAll('.footer-column')].map((column, columnIndex) => {
-              const links = [...column.querySelectorAll('a[href]')].map((link, linkIndex) => {
-                const rect = link.getBoundingClientRect();
-                const style = getComputedStyle(link);
-                return {columnIndex, linkIndex, text:(link.textContent||'').trim(), display:style.display,
-                  top:Math.round(rect.top), bottom:Math.round(rect.bottom), left:Math.round(rect.left), right:Math.round(rect.right),
-                  width:Math.round(rect.width), height:Math.round(rect.height)};
+            """() => {
+              const visible = (el) => {
+                const style = getComputedStyle(el);
+                const rect = el.getBoundingClientRect();
+                return style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity || 1) > 0.01 && rect.width > 0 && rect.height > 0;
+              };
+              return [...document.querySelectorAll('.footer-column')].filter(visible).map((column, columnIndex) => {
+                const links = [...column.querySelectorAll('a[href]')].filter(visible).map((link, linkIndex) => {
+                  const rect = link.getBoundingClientRect();
+                  const style = getComputedStyle(link);
+                  return {columnIndex, linkIndex, text:(link.textContent||'').trim(), display:style.display,
+                    top:Math.round(rect.top), bottom:Math.round(rect.bottom), left:Math.round(rect.left), right:Math.round(rect.right),
+                    width:Math.round(rect.width), height:Math.round(rect.height)};
+                });
+                return {columnIndex, links};
               });
-              return {columnIndex, links};
-            })"""
+            }"""
         )
         route_findings = []
         for column in footer:
