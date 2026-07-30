@@ -14,7 +14,26 @@ main [id]{scroll-margin-top:116px}
 }
 .brand{min-height:44px;display:flex;align-items:center}
 .brand img{display:block;width:100%;height:auto;background:transparent!important}
-.footer-brand img{width:220px;max-width:100%;padding:0!important;background:transparent!important;border-radius:0!important}
+.site-footer .footer-brand{
+  padding:0!important;
+  background:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  overflow:visible!important;
+}
+.site-footer .footer-brand img{
+  display:block!important;
+  width:220px!important;
+  max-width:100%!important;
+  height:auto!important;
+  padding:0!important;
+  background:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  filter:none!important;
+}
 
 /* Content must never disappear merely because an observer was skipped. */
 .reveal,.reveal-ready .reveal,.reveal.visible{
@@ -77,7 +96,7 @@ main [id]{scroll-margin-top:116px}
 }
 
 @media(max-width:720px){
-  .footer-brand img{width:200px}
+  .site-footer .footer-brand img{width:200px!important}
   .breadcrumbs{gap:6px}
   .breadcrumbs a{padding-inline:4px}
 }
