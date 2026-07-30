@@ -1,0 +1,83 @@
+/* Final cross-template polish after the post-deployment audit. */
+html{scroll-padding-top:116px}
+main [id]{scroll-margin-top:116px}
+
+/* One navigation contract on every route. */
+.home-reference .home-site-header{
+  position:sticky;
+  top:0;
+  z-index:1000;
+  background:rgba(255,255,255,.98);
+  border-bottom:1px solid rgba(3,26,63,.08);
+  box-shadow:0 5px 18px rgba(3,26,63,.06);
+  backdrop-filter:blur(14px);
+}
+.brand{min-height:44px;display:flex;align-items:center}
+.brand img{display:block;width:100%;height:auto;background:transparent!important}
+.footer-brand img{width:220px;max-width:100%;padding:0!important;background:transparent!important;border-radius:0!important}
+
+/* Content must never disappear merely because an observer was skipped. */
+.reveal,.reveal-ready .reveal,.reveal.visible{
+  opacity:1!important;
+  transform:none!important;
+  transition:none!important;
+}
+
+/* White components inside dark sections must retain dark readable text. */
+.section-dark .card,
+.section-dark .number-item,
+.section-dark .lifecycle li,
+.section-dark .matrix-layer:not(:nth-child(4)),
+.section-dark .document-card,
+.section-dark .form-shell{
+  color:var(--ink);
+}
+.section-dark .card h2,
+.section-dark .card h3,
+.section-dark .number-item b,
+.section-dark .lifecycle strong,
+.section-dark .matrix-layer:not(:nth-child(4))>span,
+.section-dark .document-card h2,
+.section-dark .document-card h3,
+.section-dark .form-shell legend,
+.section-dark .form-shell label{
+  color:var(--ink);
+}
+.section-dark>.container>.check-list li,
+.section-dark .split>div:not(.card)>.check-list li,
+.section-dark .matrix>div:not(.card)>.check-list li{
+  color:#d7e4ee;
+}
+.section-dark .card .check-list li,
+.section-dark .form-shell .check-list li,
+.section-dark .number-item small,
+.section-dark .lifecycle small{
+  color:var(--slate-700);
+}
+.section-dark .card-index{color:var(--teal-700)}
+
+/* Keep sticky navigation from visually colliding with section content. */
+.site-header{isolation:isolate}
+.page-hero,.section,.final-cta{isolation:isolate}
+
+/* Touch targets remain usable without making the footer visually heavy. */
+.footer-column a,.footer-legal a,.footer-bottom a{min-height:44px;display:inline-flex;align-items:center}
+.cookie-manage{min-height:44px}
+.breadcrumbs a{min-height:40px;display:inline-flex;align-items:center}
+
+@media(max-width:1100px){
+  html{scroll-padding-top:82px}
+  main [id]{scroll-margin-top:82px}
+  .home-reference .home-site-header{height:auto}
+  .home-reference .home-site-header .nav-wrap{height:auto;min-height:74px}
+  .home-reference .home-site-header .brand{width:178px}
+  .primary-nav>a,.nav-dropdown>button{min-height:52px}
+  .footer-column a{width:100%;padding-block:10px}
+  .footer-bottom a,.footer-legal a{padding:10px 6px}
+}
+
+@media(max-width:720px){
+  .footer-brand img{width:200px}
+  .breadcrumbs{gap:6px}
+  .breadcrumbs a{padding-inline:4px}
+}
