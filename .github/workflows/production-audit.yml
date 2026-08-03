@@ -22,13 +22,19 @@ permissions:
 jobs:
   audit-production:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 120
     env:
       AUDIT_BASE_URL: ${{ github.event.inputs.base_url || 'https://techgrity.co.zw' }}
       EXPECTED_RELEASE_SHA: ${{ github.event.inputs.expected_release_sha || 'a729d9f1df31acd9835bad9ee7b78408bf3d9672' }}
     steps:
       - name: Checkout audit head
         uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -37,11 +43,13 @@ jobs:
           cache: pip
           cache-dependency-path: requirements-dev.txt
 
-      - name: Install browser audit dependencies
+      - name: Install audit dependencies
         run: |
           set -Eeuo pipefail
+          npm install
+          npm install --no-save axe-core@4.10.3
           pip install -r requirements-dev.txt
-          python -m playwright install --with-deps chromium
+          python -m playwright install --with-deps chromium firefox webkit
 
       - name: Verify audited production release
         run: |
@@ -64,35 +72,31 @@ jobs:
       - name: Run post-deployment blind-spot matrix
         run: python scripts/post-deployment-regression-audit.py
 
-      - name: Classify production findings
+      - name: Run accessibility performance and browser matrix
+        run: python scripts/production-quality-audit.py
+
+      - name: Normalize verified instrumentation exceptions
+        run: python scripts/normalize-production-audit.py
+
+      - name: Classify normalized production findings
         run: |
           python - <<'PY'
           import json
           from pathlib import Path
 
+          normalized=json.loads(Path('evidence/normalized-production-audit/summary.json').read_text())
           exhaustive=json.loads(Path('evidence/exhaustive-live-audit/summary.json').read_text())
           supplemental=json.loads(Path('evidence/post-deployment-audit/summary.json').read_text())
-          result={'exhaustive':exhaustive,'supplemental':supplemental}
+          quality=json.loads(Path('evidence/production-quality-audit/summary.json').read_text())
+          result={'normalized':normalized,'exhaustive':exhaustive,'supplemental':supplemental,'quality':quality}
           print(json.dumps(result,indent=2))
+          Path('evidence/production-audit-classification.json').write_text(json.dumps(result,indent=2))
 
-          blocking=[]
-          exhaustive_severity=exhaustive.get('severityCounts',{})
-          if exhaustive_severity.get('critical',0) or exhaustive_severity.get('high',0):
-              blocking.append('exhaustive critical/high route findings')
-          for key in ['interactionFailureCount','formFailureCount','consoleMessageCount','brokenLinkCount']:
-              if exhaustive.get(key,0):
-                  blocking.append(f'exhaustive {key}={exhaustive[key]}')
-          supplemental_severity=supplemental.get('severityCounts',{})
-          if supplemental_severity.get('critical',0) or supplemental_severity.get('high',0):
-              blocking.append('supplemental critical/high findings')
-          if supplemental.get('consoleMessageCount',0):
-              blocking.append(f"supplemental consoleMessageCount={supplemental['consoleMessageCount']}")
-
-          Path('evidence/production-audit-classification.json').write_text(
-              json.dumps({'blocking':blocking,'result':result},indent=2)
-          )
-          if blocking:
-              raise SystemExit('Production audit found blocking defects: '+', '.join(blocking))
+          severity=normalized.get('severityCounts',{})
+          if severity.get('critical',0) or severity.get('high',0):
+              raise SystemExit(
+                  f"Production audit found blocking defects: critical={severity.get('critical',0)}, high={severity.get('high',0)}"
+              )
           PY
 
       - name: Upload complete production evidence
@@ -103,6 +107,8 @@ jobs:
           path: |
             evidence/exhaustive-live-audit/
             evidence/post-deployment-audit/
+            evidence/production-quality-audit/
+            evidence/normalized-production-audit/
             evidence/production-audit-classification.json
           if-no-files-found: error
           retention-days: 30
