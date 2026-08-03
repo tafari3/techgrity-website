@@ -3,6 +3,8 @@ name: Production Website Audit
 on:
   push:
     branches: [audit/post-deployment-20260803]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
     inputs:
       base_url:
