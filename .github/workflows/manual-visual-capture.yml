@@ -6,6 +6,11 @@ on:
     paths:
       - scripts/manual-visual-capture.py
       - .github/workflows/manual-visual-capture.yml
+  pull_request:
+    branches: [main]
+    paths:
+      - scripts/manual-visual-capture.py
+      - .github/workflows/manual-visual-capture.yml
   workflow_dispatch:
     inputs:
       base_url:
