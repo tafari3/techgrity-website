@@ -13,10 +13,10 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  AUDIT_UPSTREAM_URL: https://techgrity-systems-live-7z1f6pxn3-tafarac3-7447s-projects.vercel.app
-  VERCEL_SHARE_URL: https://techgrity-systems-live-7z1f6pxn3-tafarac3-7447s-projects.vercel.app/?_vercel_share=hxZF4nQ7l61Uvhi4VA6Ba4fv0CzyTISl
+  AUDIT_UPSTREAM_URL: https://techgrity-systems-live-ecj2u65hm-tafarac3-7447s-projects.vercel.app
+  VERCEL_SHARE_URL: https://techgrity-systems-live-ecj2u65hm-tafarac3-7447s-projects.vercel.app/?_vercel_share=jEghFAaJuAdFxY58pckSjwxIaHgFPJ4S
   AUDIT_BASE_URL: http://127.0.0.1:4180
-  EXPECTED_RELEASE_SHA: 986686c2784c47f4eafbb6594e7b4f49f9644c69
+  EXPECTED_RELEASE_SHA: 08cd3afd16e3932c44862ffa0d13582fff9863d4
   AUDIT_CANONICAL_BASE: https://techgrity.co.zw
 
 jobs:
@@ -267,9 +267,13 @@ jobs:
               match=re.fullmatch(r'(-?\d+(?:\.\d+)?)px',str(value or ''))
               return float(match.group(1)) if match else None
 
+          def intersects(rect, width, height):
+              return bool(rect and rect['right']>0 and rect['left']<width and rect['bottom']>0 and rect['top']<height)
+
           path=Path('evidence/manual-pointer-navigation')/os.environ['AUDIT_BROWSER']/os.environ['AUDIT_VIEWPORT']/ 'manifest.json'
           data=json.loads(path.read_text())
           failures=[]
+          viewport=data['viewport']
           for record in data['records']:
               for state in record.get('states',[]):
                   opened,closed,before=state['opened'],state['closed'],state['before']
@@ -281,6 +285,8 @@ jobs:
 
                   if opened.get('expanded')!='true' or not opened.get('navOpenClass') or not opened.get('intersectsViewport'):
                       failures.append({'route':route,'position':position,'code':'open-state','state':state})
+                  if not intersects(opened.get('toggleRect'),viewport['width'],viewport['height']):
+                      failures.append({'route':route,'position':position,'code':'open-toggle-hidden','toggle':opened.get('toggleRect')})
 
                   all_items=opened.get('allTopItems',[])
                   visible_items=opened.get('visibleTopItems',[])
