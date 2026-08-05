@@ -31,12 +31,18 @@ def sample(page, elapsed_ms: int) -> dict:
           const nav=document.querySelector('.primary-nav');
           const toggle=document.querySelector('.menu-toggle');
           const rect=nav?.getBoundingClientRect();
+          const toggleRect=toggle?.getBoundingClientRect();
           const style=nav ? getComputedStyle(nav) : null;
           return {
             elapsedMs: elapsed,
             scrollY: Math.round(window.scrollY),
             expanded: toggle?.getAttribute('aria-expanded'),
             openClass: nav?.classList.contains('open'),
+            toggleRect: toggleRect ? {
+              top:Math.round(toggleRect.top), bottom:Math.round(toggleRect.bottom),
+              left:Math.round(toggleRect.left), right:Math.round(toggleRect.right),
+              width:Math.round(toggleRect.width), height:Math.round(toggleRect.height)
+            } : null,
             rect: rect ? {
               top:Math.round(rect.top), bottom:Math.round(rect.bottom),
               left:Math.round(rect.left), right:Math.round(rect.right),
@@ -77,10 +83,16 @@ with sync_playwright() as playwright:
                 page.evaluate("window.scrollTo(0,0)")
                 page.wait_for_timeout(150)
 
-            toggle=page.locator('.menu-toggle')
-            if toggle.count()!=1 or not toggle.is_visible():
+            before=sample(page, -1)
+            toggle_rect=before.get("toggleRect")
+            if not toggle_rect or toggle_rect["width"] <= 0 or toggle_rect["height"] <= 0:
                 raise RuntimeError(f"{route} {position}: toggle unavailable")
-            toggle.click()
+            if not (toggle_rect["right"] > 0 and toggle_rect["left"] < VIEWPORT["width"] and toggle_rect["bottom"] > 0 and toggle_rect["top"] < VIEWPORT["height"]):
+                raise RuntimeError(f"{route} {position}: sticky toggle is not in the viewport before tap: {toggle_rect}")
+
+            click_x=(toggle_rect["left"]+toggle_rect["right"])/2
+            click_y=(toggle_rect["top"]+toggle_rect["bottom"])/2
+            page.mouse.click(click_x, click_y)
 
             timeline=[]
             previous=0
@@ -92,10 +104,10 @@ with sync_playwright() as playwright:
             slug='home' if route=='/' else 'capabilities'
             filename=f"{slug}--{position}--settled.png"
             page.screenshot(path=str(OUT/filename), full_page=False)
-            final=timeline[-1]
             records.append({
                 "route":route,"position":position,"browser":BROWSER_NAME,
-                "status":response.status if response else None,"file":filename,"timeline":timeline
+                "status":response.status if response else None,"file":filename,
+                "before":before,"tap":{"x":click_x,"y":click_y},"timeline":timeline
             })
             page.close()
 
