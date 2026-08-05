@@ -14,6 +14,16 @@ for(const dir of ['src','public']){
 }
 const siteJs=fs.readFileSync(path.join(root,'public','site.js'),'utf8');
 if(!siteJs.includes('lockPageForMenu')||!siteJs.includes('unlockPageForMenu'))errors.push('site.js is missing scroll-preserving menu lock');
+if(!siteJs.includes('const focusWithoutScroll =')||!siteJs.includes('node.focus({preventScroll: true})'))errors.push('site.js is missing scroll-safe navigation focus');
+for(const transfer of [
+  'focusWithoutScroll(menuReturnFocus || menuButton)',
+  'focusWithoutScroll(focusablesIn(nav)[0])',
+  "focusWithoutScroll(dropdown.querySelector('.mega-menu a, .mini-menu a'))",
+  'focusWithoutScroll(last)',
+  'focusWithoutScroll(first)',
+]){
+  if(!siteJs.includes(transfer))errors.push(`site.js is missing scroll-safe navigation transfer: ${transfer}`);
+}
 if(!siteJs.includes("control.removeAttribute('aria-describedby')"))errors.push('site.js is missing generated aria-describedby cleanup');
 const forms=fs.readFileSync(path.join(root,'api','_forms.js'),'utf8');
 if(forms.includes(' — '))errors.push('SMTP subject still contains an unencoded Unicode em dash');
@@ -34,4 +44,4 @@ for(const file of walk(path.join(root,'dist')).filter(file=>file.endsWith('.html
 const builtSiteJs=fs.readFileSync(path.join(root,'dist','site.js'),'utf8');
 if(/\+263 78 330 4307|\+263783304307/.test(builtSiteJs))errors.push('built site.js contains superseded telephone data');
 if(errors.length){console.error(errors.map(error=>`ERROR: ${error}`).join('\n'));process.exit(1)}
-console.log(JSON.stringify({node:pkg.engines.node,assetCache:cache,sourceDrift:false,malformedImages:false},null,2));
+console.log(JSON.stringify({node:pkg.engines.node,assetCache:cache,sourceDrift:false,malformedImages:false,scrollSafeNavigationFocus:true},null,2));
