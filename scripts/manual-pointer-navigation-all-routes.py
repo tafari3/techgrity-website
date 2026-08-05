@@ -62,6 +62,38 @@ def settle(page) -> None:
     page.wait_for_timeout(400)
 
 
+def set_scroll_position(page, position: str) -> dict:
+    setup = page.evaluate(
+        """(position) => new Promise((resolve) => {
+          const root = document.documentElement;
+          const previousInlineScrollBehavior = root.style.scrollBehavior;
+          root.style.scrollBehavior = 'auto';
+          const target = position === 'middle'
+            ? Math.max(0, Math.round((root.scrollHeight - innerHeight) / 2))
+            : 0;
+          window.scrollTo({top: target, left: 0, behavior: 'auto'});
+          requestAnimationFrame(() => requestAnimationFrame(() => {
+            const actual = Math.round(window.scrollY);
+            root.style.scrollBehavior = previousInlineScrollBehavior;
+            resolve({target, actual, previousInlineScrollBehavior});
+          }));
+        })""",
+        position,
+    )
+    samples = []
+    for _ in range(4):
+        samples.append(round(page.evaluate("window.scrollY")))
+        page.wait_for_timeout(50)
+    setup["samples"] = samples
+    if max(samples) - min(samples) > 1:
+        raise RuntimeError(f"{position}: scroll baseline did not settle: {samples}")
+    if abs(samples[-1] - setup["actual"]) > 1:
+        raise RuntimeError(
+            f"{position}: scroll baseline changed after setup: {setup['actual']} -> {samples[-1]}"
+        )
+    return setup
+
+
 def mark_scroll_anchor(page, token: str) -> dict:
     return page.evaluate(
         """(token) => {
@@ -171,14 +203,14 @@ with sync_playwright() as playwright:
                 page=context.new_page()
                 response=page.goto(f"{BASE_URL}{route}",wait_until="domcontentloaded",timeout=35_000)
                 settle(page)
-                if position=="middle":
-                    page.evaluate("window.scrollTo(0,Math.max(0,(document.documentElement.scrollHeight-innerHeight)/2))")
-                    page.wait_for_timeout(250)
-                else:
-                    page.evaluate("window.scrollTo(0,0)")
-                    page.wait_for_timeout(150)
+                scroll_setup=set_scroll_position(page,position)
                 anchor=mark_scroll_anchor(page,f"{slug(route)}--{position}")
                 before=snapshot(page)
+                if abs(before.get("scrollY",0)-scroll_setup["samples"][-1])>1:
+                    raise RuntimeError(
+                        f"{route} {position}: baseline changed before pointer tap: "
+                        f"{scroll_setup['samples'][-1]} -> {before.get('scrollY',0)}"
+                    )
                 rect=before.get("toggleRect")
                 if not rect or rect["width"]<=0 or rect["height"]<=0:
                     raise RuntimeError(f"{route} {position}: no rendered toggle")
@@ -192,7 +224,7 @@ with sync_playwright() as playwright:
                 page.keyboard.press("Escape")
                 page.wait_for_timeout(500)
                 closed=snapshot(page)
-                route_record["states"].append({"position":position,"status":response.status if response else None,"file":filename,"tap":tap,"anchor":anchor,"before":before,"opened":opened,"closed":closed})
+                route_record["states"].append({"position":position,"status":response.status if response else None,"file":filename,"tap":tap,"scrollSetup":scroll_setup,"anchor":anchor,"before":before,"opened":opened,"closed":closed})
                 page.close()
         except Exception as exc:
             route_record["exception"]=f"{type(exc).__name__}: {exc}"
