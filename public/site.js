@@ -11,6 +11,14 @@
   ].join(',');
 
   const focusablesIn = (root) => root ? Array.from(root.querySelectorAll(focusableSelector)).filter((node) => !node.hidden && node.offsetParent !== null) : [];
+  const focusWithoutScroll = (node) => {
+    if (!node) return;
+    try {
+      node.focus({preventScroll: true});
+    } catch {
+      node.focus();
+    }
+  };
 
   const menuButton = document.querySelector('.menu-toggle');
   const nav = document.querySelector('.primary-nav');
@@ -74,7 +82,7 @@
     if (wasOpen) unlockPageForMenu();
     else document.body.classList.remove('menu-open');
     closeDropdowns();
-    if (restoreFocus && wasOpen) (menuReturnFocus || menuButton)?.focus();
+    if (restoreFocus && wasOpen) focusWithoutScroll(menuReturnFocus || menuButton);
   };
 
   menuButton?.addEventListener('click', () => {
@@ -85,7 +93,11 @@
     nav?.classList.toggle('open', open);
     if (open) lockPageForMenu();
     else unlockPageForMenu();
-    if (open) window.requestAnimationFrame(() => focusablesIn(nav)[0]?.focus());
+    if (open) {
+      window.requestAnimationFrame(() => {
+        focusWithoutScroll(focusablesIn(nav)[0]);
+      });
+    }
   });
 
   dropdowns.forEach((dropdown) => dropdown.querySelector(':scope > button')?.addEventListener('click', (event) => {
@@ -95,7 +107,9 @@
     dropdown.classList.toggle('open', open);
     event.currentTarget.setAttribute('aria-expanded', String(open));
     if (open && window.matchMedia('(max-width: 1100px)').matches) {
-      window.requestAnimationFrame(() => dropdown.querySelector('.mega-menu a, .mini-menu a')?.focus());
+      window.requestAnimationFrame(() => {
+        focusWithoutScroll(dropdown.querySelector('.mega-menu a, .mini-menu a'));
+      });
     }
   }));
 
@@ -116,10 +130,10 @@
       const last = items[items.length - 1];
       if (event.shiftKey && document.activeElement === first) {
         event.preventDefault();
-        last.focus();
+        focusWithoutScroll(last);
       } else if (!event.shiftKey && document.activeElement === last) {
         event.preventDefault();
-        first.focus();
+        focusWithoutScroll(first);
       }
     }
   });
