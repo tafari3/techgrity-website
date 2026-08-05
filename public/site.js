@@ -22,10 +22,45 @@
 
   const menuButton = document.querySelector('.menu-toggle');
   const nav = document.querySelector('.primary-nav');
+  const siteHeader = document.querySelector('.site-header');
   const dropdowns = Array.from(document.querySelectorAll('.nav-dropdown'));
   let menuReturnFocus = null;
   let menuScrollY = 0;
   let menuLocked = false;
+  let menuBodyPaddingTop = '';
+  let menuHeaderStyles = null;
+
+  const pinMenuHeader = (body) => {
+    if (!siteHeader) return;
+    const headerHeight = siteHeader.getBoundingClientRect().height;
+    menuBodyPaddingTop = body.style.paddingTop;
+    menuHeaderStyles = {
+      position: siteHeader.style.position,
+      top: siteHeader.style.top,
+      right: siteHeader.style.right,
+      left: siteHeader.style.left,
+      width: siteHeader.style.width,
+    };
+    body.style.paddingTop = `${headerHeight}px`;
+    siteHeader.style.position = 'fixed';
+    siteHeader.style.top = '0';
+    siteHeader.style.right = '0';
+    siteHeader.style.left = '0';
+    siteHeader.style.width = '100%';
+  };
+
+  const restoreMenuHeader = (body) => {
+    if (siteHeader && menuHeaderStyles) {
+      siteHeader.style.position = menuHeaderStyles.position;
+      siteHeader.style.top = menuHeaderStyles.top;
+      siteHeader.style.right = menuHeaderStyles.right;
+      siteHeader.style.left = menuHeaderStyles.left;
+      siteHeader.style.width = menuHeaderStyles.width;
+    }
+    body.style.paddingTop = menuBodyPaddingTop;
+    menuBodyPaddingTop = '';
+    menuHeaderStyles = null;
+  };
 
   const lockPageForMenu = () => {
     if (menuLocked) return;
@@ -33,6 +68,7 @@
     menuScrollY = window.scrollY;
     const scrollbarGap = Math.max(0, window.innerWidth - document.documentElement.clientWidth);
     body.dataset.menuScrollY = String(menuScrollY);
+    pinMenuHeader(body);
     body.style.position = 'fixed';
     body.style.top = `-${menuScrollY}px`;
     body.style.left = '0';
@@ -53,6 +89,7 @@
     const root = document.documentElement;
     const previousScrollBehavior = root.style.scrollBehavior;
     body.classList.remove('menu-open');
+    restoreMenuHeader(body);
     body.style.removeProperty('position');
     body.style.removeProperty('top');
     body.style.removeProperty('left');
