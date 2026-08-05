@@ -13,10 +13,10 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  AUDIT_UPSTREAM_URL: https://techgrity-systems-live-lp1upmikc-tafarac3-7447s-projects.vercel.app
-  VERCEL_SHARE_URL: https://techgrity-systems-live-lp1upmikc-tafarac3-7447s-projects.vercel.app/?_vercel_share=lbuYDlYAoqwdpAI2BI9mATdbFlZ4UDoy
+  AUDIT_UPSTREAM_URL: https://techgrity-systems-live-7z1f6pxn3-tafarac3-7447s-projects.vercel.app
+  VERCEL_SHARE_URL: https://techgrity-systems-live-7z1f6pxn3-tafarac3-7447s-projects.vercel.app/?_vercel_share=hxZF4nQ7l61Uvhi4VA6Ba4fv0CzyTISl
   AUDIT_BASE_URL: http://127.0.0.1:4180
-  EXPECTED_RELEASE_SHA: 8169401ad3f46f71f495ce0df9a8885f52b6a47f
+  EXPECTED_RELEASE_SHA: 986686c2784c47f4eafbb6594e7b4f49f9644c69
   AUDIT_CANONICAL_BASE: https://techgrity.co.zw
 
 jobs:
@@ -255,38 +255,67 @@ jobs:
             sleep 1
           done
           curl --fail --silent --show-error "$AUDIT_BASE_URL/release.json"
-      - name: Make pointer matrix preview-aware
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          path=Path('scripts/manual-pointer-navigation-all-routes.py')
-          text=path.read_text()
-          text=text.replace('BASE_URL = "https://techgrity.co.zw"','BASE_URL = os.environ["AUDIT_BASE_URL"].rstrip("/")')
-          text=text.replace('EXPECTED_RELEASE_SHA = "a729d9f1df31acd9835bad9ee7b78408bf3d9672"','EXPECTED_RELEASE_SHA = os.environ["EXPECTED_RELEASE_SHA"]')
-          path.write_text(text)
-          PY
       - name: Exercise real pointer navigation on every route
         run: python scripts/manual-pointer-navigation-all-routes.py
       - name: Assert corrected navigation behavior
         run: |
           python - <<'PY'
-          import json, os
+          import json, os, re
           from pathlib import Path
+
+          def pixels(value):
+              match=re.fullmatch(r'(-?\d+(?:\.\d+)?)px',str(value or ''))
+              return float(match.group(1)) if match else None
+
           path=Path('evidence/manual-pointer-navigation')/os.environ['AUDIT_BROWSER']/os.environ['AUDIT_VIEWPORT']/ 'manifest.json'
           data=json.loads(path.read_text())
           failures=[]
           for record in data['records']:
               for state in record.get('states',[]):
                   opened,closed,before=state['opened'],state['closed'],state['before']
+                  position=state['position']
+                  route=record['route']
+                  before_y=before.get('scrollY',0)
+                  opened_styles=opened.get('bodyInlineStyles',{})
+                  closed_styles=closed.get('bodyInlineStyles',{})
+
                   if opened.get('expanded')!='true' or not opened.get('navOpenClass') or not opened.get('intersectsViewport'):
-                      failures.append({'route':record['route'],'position':state['position'],'code':'open-state','state':state})
-                  if len(opened.get('visibleTopItems',[]))<8:
-                      failures.append({'route':record['route'],'position':state['position'],'code':'hidden-items','state':state})
-                  if state['position']=='middle' and before.get('scrollY',0)>0:
-                      if opened.get('scrollY')!=before.get('scrollY') or closed.get('scrollY')!=before.get('scrollY'):
-                          failures.append({'route':record['route'],'position':'middle','code':'scroll-not-preserved','before':before.get('scrollY'),'opened':opened.get('scrollY'),'closed':closed.get('scrollY')})
-                  if closed.get('expanded')!='false' or closed.get('navOpenClass'):
-                      failures.append({'route':record['route'],'position':state['position'],'code':'close-state','state':state})
+                      failures.append({'route':route,'position':position,'code':'open-state','state':state})
+
+                  all_items=opened.get('allTopItems',[])
+                  visible_items=opened.get('visibleTopItems',[])
+                  if len(all_items)<8 or visible_items!=all_items:
+                      failures.append({'route':route,'position':position,'code':'hidden-items','all':all_items,'visible':visible_items})
+
+                  dataset_y=opened.get('bodyDatasetScrollY')
+                  top_px=pixels(opened_styles.get('top'))
+                  if not opened.get('bodyLocked') or opened_styles.get('position')!='fixed':
+                      failures.append({'route':route,'position':position,'code':'lock-state','opened':opened})
+                  if dataset_y is None or abs(float(dataset_y)-before_y)>1:
+                      failures.append({'route':route,'position':position,'code':'lock-saved-scroll','before':before_y,'saved':dataset_y})
+                  if top_px is None or abs(top_px+before_y)>1:
+                      failures.append({'route':route,'position':position,'code':'lock-offset','before':before_y,'top':opened_styles.get('top')})
+
+                  before_anchor=before.get('anchorRect')
+                  opened_anchor=opened.get('anchorRect')
+                  if not before_anchor or not opened_anchor or before.get('anchorToken')!=opened.get('anchorToken'):
+                      failures.append({'route':route,'position':position,'code':'anchor-missing','before':before_anchor,'opened':opened_anchor})
+                  elif abs(opened_anchor['top']-before_anchor['top'])>1 or abs(opened_anchor['left']-before_anchor['left'])>1:
+                      failures.append({'route':route,'position':position,'code':'anchor-moved-open','before':before_anchor,'opened':opened_anchor})
+
+                  if closed.get('expanded')!='false' or closed.get('navOpenClass') or closed.get('bodyLocked'):
+                      failures.append({'route':route,'position':position,'code':'close-state','state':state})
+                  if closed.get('bodyDatasetScrollY') is not None or any(closed_styles.values()):
+                      failures.append({'route':route,'position':position,'code':'lock-styles-retained','closed':closed})
+                  if not closed.get('activeIsMenuToggle'):
+                      failures.append({'route':route,'position':position,'code':'focus-not-returned','closed':closed})
+                  if abs(closed.get('scrollY',0)-before_y)>1:
+                      failures.append({'route':route,'position':position,'code':'scroll-not-restored','before':before_y,'closed':closed.get('scrollY')})
+
+                  closed_anchor=closed.get('anchorRect')
+                  if not before_anchor or not closed_anchor or abs(closed_anchor['top']-before_anchor['top'])>1 or abs(closed_anchor['left']-before_anchor['left'])>1:
+                      failures.append({'route':route,'position':position,'code':'anchor-moved-close','before':before_anchor,'closed':closed_anchor})
+
           print(json.dumps({'failures':failures},indent=2))
           if failures: raise SystemExit(f'{len(failures)} pointer-navigation failures')
           PY
