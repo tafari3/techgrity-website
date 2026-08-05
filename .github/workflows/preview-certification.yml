@@ -14,7 +14,7 @@ concurrency:
 
 env:
   AUDIT_UPSTREAM_URL: https://techgrity-systems-live-ecj2u65hm-tafarac3-7447s-projects.vercel.app
-  VERCEL_SHARE_URL: https://techgrity-systems-live-ecj2u65hm-tafarac3-7447s-projects.vercel.app/?_vercel_share=jEghFAaJuAdFxY58pckSjwxIaHgFPJ4S
+  VERCEL_SHARE_URL: https://techgrity-systems-live-ecj2u65hm-tafarac3-7447s-projects.vercel.app/?_vercel_share=lww8GmRyrURzPgAtjb0f5GG5DHH13ckw
   AUDIT_BASE_URL: http://127.0.0.1:4180
   EXPECTED_RELEASE_SHA: 08cd3afd16e3932c44862ffa0d13582fff9863d4
   AUDIT_CANONICAL_BASE: https://techgrity.co.zw
