@@ -8,8 +8,10 @@ import re
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 from playwright.sync_api import sync_playwright
 
-BASE_URL = "https://techgrity.co.zw"
-EXPECTED_RELEASE_SHA = "a729d9f1df31acd9835bad9ee7b78408bf3d9672"
+BASE_URL = os.environ.get("AUDIT_BASE_URL", "https://techgrity.co.zw").rstrip("/")
+EXPECTED_RELEASE_SHA = os.environ.get(
+    "EXPECTED_RELEASE_SHA", "a729d9f1df31acd9835bad9ee7b78408bf3d9672"
+)
 BROWSER_NAME = os.environ.get("AUDIT_BROWSER", "chromium")
 VIEWPORT_LABEL = os.environ.get("AUDIT_VIEWPORT", "mobile")
 VIEWPORTS = {
@@ -60,26 +62,84 @@ def settle(page) -> None:
     page.wait_for_timeout(400)
 
 
+def mark_scroll_anchor(page, token: str) -> dict:
+    return page.evaluate(
+        """(token) => {
+          document.querySelectorAll('[data-audit-scroll-anchor]').forEach((node) => {
+            node.removeAttribute('data-audit-scroll-anchor');
+          });
+          const headerBottom = document.querySelector('header')?.getBoundingClientRect().bottom || 0;
+          const y = Math.min(innerHeight - 24, Math.max(headerBottom + 24, Math.round(innerHeight * 0.58)));
+          const x = Math.min(innerWidth - 24, Math.max(24, Math.round(innerWidth * 0.32)));
+          const usable = (node) => {
+            if (!node || node === document.body || node === document.documentElement) return false;
+            if (!node.closest('main')) return false;
+            const style = getComputedStyle(node);
+            const rect = node.getBoundingClientRect();
+            return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
+          };
+          let node = document.elementFromPoint(x, y);
+          while (node && !usable(node)) node = node.parentElement;
+          if (!usable(node)) {
+            const candidates = [...document.querySelectorAll('main h1, main h2, main h3, main p, main li, main article, main section, main div')]
+              .filter(usable)
+              .map((candidate) => ({candidate, rect: candidate.getBoundingClientRect()}))
+              .filter(({rect}) => rect.bottom >= y && rect.top <= y)
+              .sort((a, b) => (a.rect.width * a.rect.height) - (b.rect.width * b.rect.height));
+            node = candidates[0]?.candidate || [...document.querySelectorAll('main h1, main h2, main h3, main p, main section')].find(usable);
+          }
+          if (!node) throw new Error('Unable to select a visible page anchor');
+          node.setAttribute('data-audit-scroll-anchor', token);
+          const rect = node.getBoundingClientRect();
+          return {
+            token,
+            tag: node.tagName,
+            id: node.id || null,
+            text: (node.innerText || node.textContent || '').trim().slice(0, 120),
+            top: Math.round(rect.top),
+            left: Math.round(rect.left),
+            sample: {x, y}
+          };
+        }""",
+        token,
+    )
+
+
 def snapshot(page) -> dict:
     return page.evaluate(
         """() => {
           const nav=document.querySelector('.primary-nav');
           const toggle=document.querySelector('.menu-toggle');
+          const anchor=document.querySelector('[data-audit-scroll-anchor]');
           const nr=nav?.getBoundingClientRect();
           const tr=toggle?.getBoundingClientRect();
+          const ar=anchor?.getBoundingClientRect();
+          const body=document.body;
           const visible=(el)=>{const s=getComputedStyle(el),r=el.getBoundingClientRect();return s.display!=='none'&&s.visibility!=='hidden'&&Number(s.opacity||1)>.01&&r.width>0&&r.height>0&&r.bottom>0&&r.top<innerHeight&&r.right>0&&r.left<innerWidth};
           const items=nav?[...nav.children].map(el=>el.matches('a[href]')?el:el.matches('.nav-dropdown')?el.querySelector(':scope > button'):null).filter(Boolean):[];
           return {
             scrollY:Math.round(window.scrollY),
             expanded:toggle?.getAttribute('aria-expanded')||null,
             navOpenClass:Boolean(nav?.classList.contains('open')),
-            bodyLocked:document.body.classList.contains('menu-open'),
+            bodyLocked:body.classList.contains('menu-open'),
+            bodyDatasetScrollY:body.dataset.menuScrollY ?? null,
+            bodyInlineStyles:{
+              position:body.style.position||'',
+              top:body.style.top||'',
+              left:body.style.left||'',
+              right:body.style.right||'',
+              width:body.style.width||'',
+              paddingRight:body.style.paddingRight||''
+            },
             toggleRect:tr?{top:Math.round(tr.top),bottom:Math.round(tr.bottom),left:Math.round(tr.left),right:Math.round(tr.right),width:Math.round(tr.width),height:Math.round(tr.height)}:null,
             navRect:nr?{top:Math.round(nr.top),bottom:Math.round(nr.bottom),left:Math.round(nr.left),right:Math.round(nr.right),width:Math.round(nr.width),height:Math.round(nr.height)}:null,
+            anchorRect:ar?{top:Math.round(ar.top),bottom:Math.round(ar.bottom),left:Math.round(ar.left),right:Math.round(ar.right),width:Math.round(ar.width),height:Math.round(ar.height)}:null,
+            anchorToken:anchor?.getAttribute('data-audit-scroll-anchor')||null,
             intersectsViewport:nr?nr.bottom>0&&nr.top<innerHeight&&nr.right>0&&nr.left<innerWidth:false,
             allTopItems:items.map(el=>(el.innerText||el.textContent||'').trim()),
             visibleTopItems:items.filter(visible).map(el=>(el.innerText||el.textContent||'').trim()),
-            activeText:(document.activeElement?.innerText||document.activeElement?.textContent||'').trim()
+            activeText:(document.activeElement?.innerText||document.activeElement?.textContent||'').trim(),
+            activeIsMenuToggle:document.activeElement===toggle
           };
         }"""
     )
@@ -117,6 +177,7 @@ with sync_playwright() as playwright:
                 else:
                     page.evaluate("window.scrollTo(0,0)")
                     page.wait_for_timeout(150)
+                anchor=mark_scroll_anchor(page,f"{slug(route)}--{position}")
                 before=snapshot(page)
                 rect=before.get("toggleRect")
                 if not rect or rect["width"]<=0 or rect["height"]<=0:
@@ -129,9 +190,9 @@ with sync_playwright() as playwright:
                 filename=f"{slug(route)}--{position}--open.png"
                 page.screenshot(path=str(OUT/filename),full_page=False)
                 page.keyboard.press("Escape")
-                page.wait_for_timeout(350)
+                page.wait_for_timeout(500)
                 closed=snapshot(page)
-                route_record["states"].append({"position":position,"status":response.status if response else None,"file":filename,"tap":tap,"before":before,"opened":opened,"closed":closed})
+                route_record["states"].append({"position":position,"status":response.status if response else None,"file":filename,"tap":tap,"anchor":anchor,"before":before,"opened":opened,"closed":closed})
                 page.close()
         except Exception as exc:
             route_record["exception"]=f"{type(exc).__name__}: {exc}"
