@@ -18,7 +18,11 @@ if(!siteJs.includes("control.removeAttribute('aria-describedby')"))errors.push('
 const forms=fs.readFileSync(path.join(root,'api','_forms.js'),'utf8');
 if(forms.includes(' — '))errors.push('SMTP subject still contains an unencoded Unicode em dash');
 const pkg=JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8'));
-if(pkg.engines?.node!=='20.x')errors.push(`Node engine is not pinned to 20.x: ${pkg.engines?.node}`);
+if(pkg.engines?.node!=='24.x')errors.push(`Node engine is not pinned to 24.x: ${pkg.engines?.node}`);
+for(const versionFile of ['.nvmrc','.node-version']){
+  const version=fs.readFileSync(path.join(root,versionFile),'utf8').trim();
+  if(version!=='24')errors.push(`${versionFile} is not pinned to Node 24: ${version}`);
+}
 const vercel=JSON.parse(fs.readFileSync(path.join(root,'vercel.json'),'utf8'));
 const assetRule=vercel.headers?.find(rule=>rule.source==='/assets/(.*)');
 const cache=assetRule?.headers?.find(header=>header.key.toLowerCase()==='cache-control')?.value||'';
