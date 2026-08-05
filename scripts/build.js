@@ -37,6 +37,7 @@ function normaliseHtml(input){
  html=html.replace('<b>Location</b><small>Harare, Zimbabwe</small>',`<b>Head office</b><small>${ADDRESS}</small>`);
  html=html.replace('<span>Harare, Zimbabwe</span><a href="/resources/">',`<span>${ADDRESS_LINES}</span><a href="/resources/">`);
  html=html.replace('<script src="/script.js" defer></script>','<script src="/site.js" defer></script>');
+ html=html.replace(/<img([^>]*?)\/\s+style=/g,'<img$1 style=');
  return html;
 }
 function writeRoute(route,html){const dir=routeDir(route);fs.mkdirSync(dir,{recursive:true});fs.writeFileSync(path.join(dir,'index.html'),normaliseHtml(html))}

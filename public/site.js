@@ -16,6 +16,49 @@
   const nav = document.querySelector('.primary-nav');
   const dropdowns = Array.from(document.querySelectorAll('.nav-dropdown'));
   let menuReturnFocus = null;
+  let menuScrollY = 0;
+  let menuLocked = false;
+
+  const lockPageForMenu = () => {
+    if (menuLocked) return;
+    const body = document.body;
+    menuScrollY = window.scrollY;
+    const scrollbarGap = Math.max(0, window.innerWidth - document.documentElement.clientWidth);
+    body.dataset.menuScrollY = String(menuScrollY);
+    body.style.position = 'fixed';
+    body.style.top = `-${menuScrollY}px`;
+    body.style.left = '0';
+    body.style.right = '0';
+    body.style.width = '100%';
+    if (scrollbarGap) body.style.paddingRight = `${scrollbarGap}px`;
+    body.classList.add('menu-open');
+    menuLocked = true;
+  };
+
+  const unlockPageForMenu = () => {
+    const body = document.body;
+    if (!menuLocked) {
+      body.classList.remove('menu-open');
+      return;
+    }
+    const restoreY = Number(body.dataset.menuScrollY || menuScrollY || 0);
+    const root = document.documentElement;
+    const previousScrollBehavior = root.style.scrollBehavior;
+    body.classList.remove('menu-open');
+    body.style.removeProperty('position');
+    body.style.removeProperty('top');
+    body.style.removeProperty('left');
+    body.style.removeProperty('right');
+    body.style.removeProperty('width');
+    body.style.removeProperty('padding-right');
+    delete body.dataset.menuScrollY;
+    root.style.scrollBehavior = 'auto';
+    window.scrollTo(0, restoreY);
+    window.requestAnimationFrame(() => {
+      root.style.scrollBehavior = previousScrollBehavior;
+    });
+    menuLocked = false;
+  };
 
   const closeDropdowns = (except = null) => dropdowns.forEach((dropdown) => {
     if (dropdown === except) return;
@@ -28,7 +71,8 @@
     menuButton?.setAttribute('aria-expanded', 'false');
     menuButton?.setAttribute('aria-label', 'Open navigation menu');
     nav?.classList.remove('open');
-    document.body.classList.remove('menu-open');
+    if (wasOpen) unlockPageForMenu();
+    else document.body.classList.remove('menu-open');
     closeDropdowns();
     if (restoreFocus && wasOpen) (menuReturnFocus || menuButton)?.focus();
   };
@@ -39,7 +83,8 @@
     menuButton.setAttribute('aria-expanded', String(open));
     menuButton.setAttribute('aria-label', open ? 'Close navigation menu' : 'Open navigation menu');
     nav?.classList.toggle('open', open);
-    document.body.classList.toggle('menu-open', open);
+    if (open) lockPageForMenu();
+    else unlockPageForMenu();
     if (open) window.requestAnimationFrame(() => focusablesIn(nav)[0]?.focus());
   });
 
@@ -104,9 +149,19 @@
 
   const fieldContainer = (control) => control.closest('.field, .form-field');
   const clearFieldError = (field) => {
-    field?.classList.remove('invalid');
-    field?.querySelector('.field-error')?.remove();
-    field?.querySelector('[aria-invalid="true"]')?.removeAttribute('aria-invalid');
+    if (!field) return;
+    const errorIds = Array.from(field.querySelectorAll('.field-error[id]'), (error) => error.id);
+    field.querySelectorAll('[aria-describedby]').forEach((control) => {
+      const tokens = String(control.getAttribute('aria-describedby') || '')
+        .split(/\s+/)
+        .filter(Boolean)
+        .filter((token) => !errorIds.includes(token));
+      if (tokens.length) control.setAttribute('aria-describedby', tokens.join(' '));
+      else control.removeAttribute('aria-describedby');
+    });
+    field.classList.remove('invalid');
+    field.querySelectorAll('.field-error').forEach((error) => error.remove());
+    field.querySelectorAll('[aria-invalid="true"]').forEach((control) => control.removeAttribute('aria-invalid'));
   };
   const setFieldError = (control, message) => {
     const field = fieldContainer(control);
@@ -182,7 +237,7 @@
       } catch (error) {
         if (status) {
           status.className = 'form-status visible error';
-          status.innerHTML = `${error.message || 'The request could not be submitted.'} Use <a href="mailto:business@techgrity.co.zw">business@techgrity.co.zw</a> or <a href="tel:+263783304307">+263 78 330 4307</a>.`;
+          status.innerHTML = `${error.message || 'The request could not be submitted.'} Use <a href="mailto:business@techgrity.co.zw">business@techgrity.co.zw</a> or <a href="tel:+263771825554">+263 77 182 5554</a>.`;
         }
       } finally {
         if (button) {
