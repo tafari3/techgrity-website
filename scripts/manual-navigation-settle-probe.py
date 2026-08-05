@@ -38,6 +38,7 @@ def sample(page, elapsed_ms: int) -> dict:
             scrollY: Math.round(window.scrollY),
             expanded: toggle?.getAttribute('aria-expanded'),
             openClass: nav?.classList.contains('open'),
+            bodyLocked: document.body.classList.contains('menu-open'),
             toggleRect: toggleRect ? {
               top:Math.round(toggleRect.top), bottom:Math.round(toggleRect.bottom),
               left:Math.round(toggleRect.left), right:Math.round(toggleRect.right),
@@ -104,10 +105,16 @@ with sync_playwright() as playwright:
             slug='home' if route=='/' else 'capabilities'
             filename=f"{slug}--{position}--settled.png"
             page.screenshot(path=str(OUT/filename), full_page=False)
+
+            page.keyboard.press('Escape')
+            page.wait_for_timeout(350)
+            after_close=sample(page, 1850)
+
             records.append({
                 "route":route,"position":position,"browser":BROWSER_NAME,
                 "status":response.status if response else None,"file":filename,
-                "before":before,"tap":{"x":click_x,"y":click_y},"timeline":timeline
+                "before":before,"tap":{"x":click_x,"y":click_y},
+                "timeline":timeline,"afterClose":after_close
             })
             page.close()
 
