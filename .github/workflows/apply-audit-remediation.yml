@@ -6,12 +6,18 @@ on:
     paths:
       - scripts/apply-audit-remediation.py
       - .github/workflows/apply-audit-remediation.yml
+  pull_request:
+    branches: [main]
+    paths:
+      - scripts/apply-audit-remediation.py
+      - .github/workflows/apply-audit-remediation.yml
+  workflow_dispatch:
 
 permissions:
   contents: write
 
 concurrency:
-  group: techgrity-apply-audit-remediation
+  group: techgrity-apply-audit-remediation-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
