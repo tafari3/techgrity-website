@@ -53,6 +53,8 @@ PROTECTION_MARKERS = (
     b"x-vercel-protection-bypass",
 )
 
+Response = tuple[int, str, tuple[tuple[str, str], ...], bytes, str]
+
 
 class ProtectedPreview:
     """Serialize one server-side protection session and refresh it once on loss."""
@@ -62,6 +64,7 @@ class ProtectedPreview:
         self.cookies = CookieJar()
         self.opener = self._new_opener()
         self.access_headers: dict[str, str] = {}
+        self.access_query_token: str | None = None
 
     def _new_opener(self) -> urllib.request.OpenerDirector:
         return urllib.request.build_opener(
@@ -72,6 +75,7 @@ class ProtectedPreview:
         self.cookies = CookieJar()
         self.opener = self._new_opener()
         self.access_headers = {}
+        self.access_query_token = None
 
     @staticmethod
     def _share_token() -> str:
@@ -81,6 +85,27 @@ class ProtectedPreview:
             raise RuntimeError("Vercel share URL did not contain an access token")
         return token
 
+    @staticmethod
+    def _with_share_query(url: str, token: str) -> str:
+        parsed = urllib.parse.urlsplit(url)
+        query = urllib.parse.parse_qsl(parsed.query, keep_blank_values=True)
+        query = [(key, value) for key, value in query if key != "_vercel_share"]
+        query.append(("_vercel_share", token))
+        return urllib.parse.urlunsplit(
+            (
+                parsed.scheme,
+                parsed.netloc,
+                parsed.path,
+                urllib.parse.urlencode(query),
+                parsed.fragment,
+            )
+        )
+
+    def _authorized_url(self, url: str) -> str:
+        if self.access_query_token:
+            return self._with_share_query(url, self.access_query_token)
+        return url
+
     def _open(
         self,
         method: str,
@@ -88,7 +113,7 @@ class ProtectedPreview:
         headers: dict[str, str] | None = None,
         body: bytes | None = None,
         timeout: int = 60,
-    ) -> tuple[int, str, tuple[tuple[str, str], ...], bytes, str]:
+    ) -> Response:
         merged = {
             "Accept-Encoding": "identity",
             "User-Agent": STABLE_USER_AGENT,
@@ -139,10 +164,20 @@ class ProtectedPreview:
         sample = payload[:131072].lower()
         return any(marker in sample for marker in PROTECTION_MARKERS)
 
-    def _release_commit(
-        self,
-        response: tuple[int, str, tuple[tuple[str, str], ...], bytes, str],
-    ) -> str | None:
+    def _diagnose(self, label: str, response: Response) -> None:
+        status, _, headers, payload, final_url = response
+        parsed = urllib.parse.urlsplit(final_url)
+        content_type = self._header(headers, "Content-Type").split(";", 1)[0]
+        print(
+            f"AUDIT_PROXY_AUTH_DIAGNOSTIC label={label} status={status} "
+            f"host={parsed.netloc or 'none'} path={parsed.path or '/'} "
+            f"content_type={content_type or 'none'} "
+            f"protected={self._protected(status, payload, final_url)} "
+            f"cookies={len(list(self.cookies))}",
+            flush=True,
+        )
+
+    def _release_commit(self, response: Response) -> str | None:
         status, _, headers, payload, final_url = response
         if self._protected(status, payload, final_url):
             return None
@@ -164,10 +199,12 @@ class ProtectedPreview:
     def _release_response(
         self,
         headers: dict[str, str] | None = None,
-    ) -> tuple[int, str, tuple[tuple[str, str], ...], bytes, str]:
+        *,
+        url: str | None = None,
+    ) -> Response:
         return self._open(
             "GET",
-            f"{UPSTREAM}/release.json",
+            url or f"{UPSTREAM}/release.json",
             headers or {"Accept": "application/json"},
             timeout=45,
         )
@@ -176,39 +213,54 @@ class ProtectedPreview:
         self._reset()
         token = self._share_token()
         encoded_token = urllib.parse.quote(token, safe="")
-        bootstrap_headers = {"Accept": "text/html,application/xhtml+xml"}
+        release_url = f"{UPSTREAM}/release.json"
 
-        # Vercel share links legitimately traverse its SSO endpoint before the
-        # preview cookie is usable. Intermediary responses are not the success
-        # criterion; the exact release marker below is.
-        for bootstrap_url in (
-            SHARE_URL,
-            f"{UPSTREAM}/_vercel/sso-api?_vercel_share={encoded_token}",
-            SHARE_URL,
-        ):
-            self._open("GET", bootstrap_url, bootstrap_headers, timeout=45)
+        # The generated share URL is designed to redirect and set access state.
+        # Applying its query parameter directly to the exact resource avoids
+        # relying on an intermediary root-page response.
+        query_response = self._release_response(
+            url=self._with_share_query(release_url, token)
+        )
+        observed = self._release_commit(query_response)
+        access_mode = "share-query"
 
-        observed = self._release_commit(self._release_response())
-        access_mode = "cookie"
+        if observed is not None:
+            self.access_query_token = token
+        else:
+            bootstrap_headers = {"Accept": "text/html,application/xhtml+xml"}
+            for bootstrap_url in (
+                SHARE_URL,
+                f"{UPSTREAM}/_vercel/sso-api?_vercel_share={encoded_token}",
+                SHARE_URL,
+            ):
+                self._open("GET", bootstrap_url, bootstrap_headers, timeout=45)
 
-        if observed is None:
-            bypass_headers = {
-                "Accept": "application/json",
-                "x-vercel-protection-bypass": token,
-                "x-vercel-set-bypass-cookie": "samesitenone",
-            }
-            observed = self._release_commit(
-                self._release_response(bypass_headers)
-            )
+            cookie_response = self._release_response()
+            observed = self._release_commit(cookie_response)
+            access_mode = "cookie"
+
             if observed is None:
-                raise RuntimeError(
-                    "Vercel protection remained active after bounded bootstrap"
-                )
-            self.access_headers = {
-                "x-vercel-protection-bypass": token,
-                "x-vercel-set-bypass-cookie": "samesitenone",
-            }
-            access_mode = "bypass"
+                bypass_headers = {
+                    "Accept": "application/json",
+                    "x-vercel-protection-bypass": token,
+                    "x-vercel-set-bypass-cookie": "samesitenone",
+                }
+                bypass_response = self._release_response(bypass_headers)
+                observed = self._release_commit(bypass_response)
+                access_mode = "bypass"
+
+                if observed is None:
+                    self._diagnose("share-query", query_response)
+                    self._diagnose("cookie", cookie_response)
+                    self._diagnose("bypass", bypass_response)
+                    raise RuntimeError(
+                        "Vercel protection remained active after bounded bootstrap"
+                    )
+
+                self.access_headers = {
+                    "x-vercel-protection-bypass": token,
+                    "x-vercel-set-bypass-cookie": "samesitenone",
+                }
 
         print(
             f"AUDIT_PROXY_AUTHENTICATED release={observed or 'unknown'} "
@@ -226,11 +278,16 @@ class ProtectedPreview:
         url: str,
         headers: dict[str, str],
         body: bytes | None,
-    ) -> tuple[int, str, tuple[tuple[str, str], ...], bytes, str]:
+    ) -> Response:
         with self.lock:
             authorized_headers = dict(self.access_headers)
             authorized_headers.update(headers)
-            response = self._open(method, url, authorized_headers, body)
+            response = self._open(
+                method,
+                self._authorized_url(url),
+                authorized_headers,
+                body,
+            )
             if not self._protected(response[0], response[3], response[4]):
                 return response
 
@@ -242,7 +299,12 @@ class ProtectedPreview:
             self._authenticate_locked()
             authorized_headers = dict(self.access_headers)
             authorized_headers.update(headers)
-            retry = self._open(method, url, authorized_headers, body)
+            retry = self._open(
+                method,
+                self._authorized_url(url),
+                authorized_headers,
+                body,
+            )
             if self._protected(retry[0], retry[3], retry[4]):
                 raise RuntimeError(
                     "Vercel protection remained active after one bounded refresh"
