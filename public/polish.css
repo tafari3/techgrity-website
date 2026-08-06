@@ -101,3 +101,104 @@ main [id]{scroll-margin-top:116px}
   .breadcrumbs{gap:6px}
   .breadcrumbs a{padding-inline:4px}
 }
+
+
+/* === Final manual-audit remediation === */
+:root{
+  --slate-500:#596575;
+}
+.home-reference{
+  --home-teal-dark:#007575;
+  --home-muted:#596575;
+}
+.home-reference .home-site-header .primary-nav>a.active,
+.home-reference .home-site-header .primary-nav>a:hover,
+.home-reference .home-site-header .nav-dropdown>button:hover,
+.home-reference .home-site-header .nav-dropdown>button[aria-expanded="true"],
+.home-reference .home-pathway-copy em,
+.home-reference .home-capabilities-intro>p{
+  color:#007575!important;
+}
+.home-reference .section-heading>p,
+.home-reference .contact-copy>.section-kicker,
+.home-reference .contact-copy>p:nth-child(3),
+.home-reference .contact-detail a,
+.home-reference .contact-detail span,
+.home-reference .form-note,
+.form-field small,
+.form-note{
+  color:#596575!important;
+}
+.scope-label{color:#8a5b14!important}
+.lifecycle li>span{color:#00686a!important}
+
+/* Actual controls, not merely their surrounding cards, meet the 44px target. */
+.breadcrumbs a{min-height:44px!important;padding-block:2px}
+.card-link{min-height:44px!important;display:inline-flex!important;align-items:center;padding-block:10px}
+.contact-detail a,
+.contact-copy a[href^="mailto:"],
+.contact-copy a[href^="tel:"]{min-height:44px;display:inline-flex;align-items:center;padding-block:10px}
+.form-consent a{min-height:44px;display:inline-flex;align-items:center;padding-block:10px;margin-block:-10px}
+@media(max-width:680px){
+  main a[href^="#"]:not(.button){min-height:44px;display:flex;align-items:center;padding-block:8px}
+}
+
+/* The responsive overlay is viewport-bound, never header-bound. */
+@media(max-width:1100px){
+  .site-header,
+  .home-reference .home-site-header{
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+  }
+  .home-reference .home-site-header .primary-nav{
+    position:fixed!important;
+    z-index:1002!important;
+    top:76px!important;
+    right:0!important;
+    bottom:0!important;
+    left:auto!important;
+    width:min(430px,100vw)!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:calc(100dvh - 76px)!important;
+    padding:24px 28px 40px!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    overscroll-behavior:contain;
+    background:#fff!important;
+    transform:translateX(105%)!important;
+  }
+  .home-reference .home-site-header .primary-nav.open{
+    transform:translateX(0)!important;
+  }
+
+  /* Legacy templates expose the same truthful close affordance as the homepage. */
+  .site-header:not(.home-site-header) .menu-toggle span{
+    transition:transform .18s ease,opacity .18s ease;
+    transform-origin:center;
+  }
+  .site-header:not(.home-site-header) .menu-toggle[aria-expanded="true"] span:nth-child(1){
+    transform:translateY(8px) rotate(45deg);
+  }
+  .site-header:not(.home-site-header) .menu-toggle[aria-expanded="true"] span:nth-child(2){
+    opacity:0;
+  }
+  .site-header:not(.home-site-header) .menu-toggle[aria-expanded="true"] span:nth-child(3){
+    transform:translateY(-8px) rotate(-45deg);
+  }
+}
+@media(max-width:720px){
+  .home-reference .home-site-header .primary-nav{
+    top:72px!important;
+    max-height:calc(100dvh - 72px)!important;
+    width:100vw!important;
+  }
+}
+
+/* Architecture matrices stack before their labels can force tablet overflow. */
+@media(min-width:721px) and (max-width:1100px){
+  .matrix{grid-template-columns:minmax(0,1fr);gap:42px}
+  .matrix-board{width:100%;max-width:100%}
+  .matrix-layer,.matrix-layer>*{min-width:0}
+  .matrix-layer>*{overflow-wrap:anywhere}
+}

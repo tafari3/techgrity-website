@@ -1,0 +1,49 @@
+name: Manual Navigation Settle Probe
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - scripts/manual-navigation-settle-probe.py
+      - .github/workflows/manual-navigation-settle-probe.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    name: ${{ matrix.browser }} / mobile
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    env:
+      AUDIT_BROWSER: ${{ matrix.browser }}
+    steps:
+      - name: Checkout audit branch
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - name: Install browser dependencies
+        run: |
+          set -Eeuo pipefail
+          pip install -r requirements-dev.txt
+          python -m playwright install --with-deps "${AUDIT_BROWSER}"
+      - name: Capture settled navigation timelines
+        run: python scripts/manual-navigation-settle-probe.py
+      - name: Upload settled navigation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: manual-navigation-settle-${{ matrix.browser }}
+          path: evidence/manual-navigation-settle/${{ matrix.browser }}/
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 6

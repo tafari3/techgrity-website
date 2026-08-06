@@ -1,0 +1,76 @@
+'use strict';
+const fs=require('fs');
+const path=require('path');
+const root=path.resolve(__dirname,'..');
+const errors=[];
+const textExtensions=new Set(['.js','.html','.css','.json','.md']);
+function walk(dir,files=[]){if(!fs.existsSync(dir))return files;for(const entry of fs.readdirSync(dir,{withFileTypes:true})){const file=path.join(dir,entry.name);entry.isDirectory()?walk(file,files):files.push(file)}return files}
+for(const dir of ['src','public']){
+  for(const file of walk(path.join(root,dir))){
+    if(!textExtensions.has(path.extname(file)))continue;
+    const text=fs.readFileSync(file,'utf8');
+    if(/\+263 78 330 4307|\+263783304307|2367 Lavenham Road|techgrity-primary-horizontal-approved\.png/.test(text))errors.push(`${path.relative(root,file)} contains superseded source data`);
+  }
+}
+const siteJs=fs.readFileSync(path.join(root,'public','site.js'),'utf8');
+if(!siteJs.includes('lockPageForMenu')||!siteJs.includes('unlockPageForMenu'))errors.push('site.js is missing scroll-preserving menu lock');
+if(!siteJs.includes('const focusWithoutScroll =')||!siteJs.includes('node.focus({preventScroll: true})'))errors.push('site.js is missing scroll-safe navigation focus');
+for(const transfer of [
+  'focusWithoutScroll(menuReturnFocus || menuButton)',
+  'focusWithoutScroll(focusablesIn(nav)[0])',
+  "focusWithoutScroll(dropdown.querySelector('.mega-menu a, .mini-menu a'))",
+  'focusWithoutScroll(last)',
+  'focusWithoutScroll(first)',
+]){
+  if(!siteJs.includes(transfer))errors.push(`site.js is missing scroll-safe navigation transfer: ${transfer}`);
+}
+for(const headerGuard of [
+  "const siteHeader = document.querySelector('.site-header')",
+  'const pinMenuHeader =',
+  'body.style.paddingTop = `${headerHeight}px`',
+  "siteHeader.style.position = 'fixed'",
+  'const restoreMenuHeader =',
+  'siteHeader.style.position = menuHeaderStyles.position',
+]){
+  if(!siteJs.includes(headerGuard))errors.push(`site.js is missing responsive menu header preservation: ${headerGuard}`);
+}
+const polishCss=fs.readFileSync(path.join(root,'public','polish.css'),'utf8');
+for(const matrixGuard of [
+  '@media(min-width:721px) and (max-width:1100px)',
+  '.matrix{grid-template-columns:minmax(0,1fr);gap:42px}',
+  '.matrix-board{width:100%;max-width:100%}',
+  '.matrix-layer,.matrix-layer>*{min-width:0}',
+]){
+  if(!polishCss.includes(matrixGuard))errors.push(`polish.css is missing tablet architecture overflow protection: ${matrixGuard}`);
+}
+for(const closeIconGuard of [
+  '.site-header:not(.home-site-header) .menu-toggle[aria-expanded="true"] span:nth-child(1)',
+  'transform:translateY(8px) rotate(45deg)',
+  '.site-header:not(.home-site-header) .menu-toggle[aria-expanded="true"] span:nth-child(2)',
+  'opacity:0',
+  '.site-header:not(.home-site-header) .menu-toggle[aria-expanded="true"] span:nth-child(3)',
+  'transform:translateY(-8px) rotate(-45deg)',
+]){
+  if(!polishCss.includes(closeIconGuard))errors.push(`polish.css is missing truthful legacy menu close state: ${closeIconGuard}`);
+}
+if(!siteJs.includes("control.removeAttribute('aria-describedby')"))errors.push('site.js is missing generated aria-describedby cleanup');
+const forms=fs.readFileSync(path.join(root,'api','_forms.js'),'utf8');
+if(forms.includes(' — '))errors.push('SMTP subject still contains an unencoded Unicode em dash');
+const pkg=JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8'));
+if(pkg.engines?.node!=='24.x')errors.push(`Node engine is not pinned to 24.x: ${pkg.engines?.node}`);
+for(const versionFile of ['.nvmrc','.node-version']){
+  const version=fs.readFileSync(path.join(root,versionFile),'utf8').trim();
+  if(version!=='24')errors.push(`${versionFile} is not pinned to Node 24: ${version}`);
+}
+const vercel=JSON.parse(fs.readFileSync(path.join(root,'vercel.json'),'utf8'));
+const assetRule=vercel.headers?.find(rule=>rule.source==='/assets/(.*)');
+const cache=assetRule?.headers?.find(header=>header.key.toLowerCase()==='cache-control')?.value||'';
+if(/immutable|max-age=31536000/.test(cache)||!cache.includes('must-revalidate'))errors.push(`Unsafe stable-asset cache policy: ${cache}`);
+for(const file of walk(path.join(root,'dist')).filter(file=>file.endsWith('.html'))){
+  const html=fs.readFileSync(file,'utf8');
+  if(/<img[^>]*\/\s+style=/.test(html))errors.push(`${path.relative(root,file)} contains malformed self-closing image markup`);
+}
+const builtSiteJs=fs.readFileSync(path.join(root,'dist','site.js'),'utf8');
+if(/\+263 78 330 4307|\+263783304307/.test(builtSiteJs))errors.push('built site.js contains superseded telephone data');
+if(errors.length){console.error(errors.map(error=>`ERROR: ${error}`).join('\n'));process.exit(1)}
+console.log(JSON.stringify({node:pkg.engines.node,assetCache:cache,sourceDrift:false,malformedImages:false,scrollSafeNavigationFocus:true,responsiveMenuHeaderPinned:true,legacyMenuCloseIcon:true,tabletArchitectureOverflowProtected:true},null,2));
