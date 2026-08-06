@@ -171,6 +171,21 @@ main [id]{scroll-margin-top:116px}
   .home-reference .home-site-header .primary-nav.open{
     transform:translateX(0)!important;
   }
+
+  /* Legacy templates expose the same truthful close affordance as the homepage. */
+  .site-header:not(.home-site-header) .menu-toggle span{
+    transition:transform .18s ease,opacity .18s ease;
+    transform-origin:center;
+  }
+  .site-header:not(.home-site-header) .menu-toggle[aria-expanded="true"] span:nth-child(1){
+    transform:translateY(8px) rotate(45deg);
+  }
+  .site-header:not(.home-site-header) .menu-toggle[aria-expanded="true"] span:nth-child(2){
+    opacity:0;
+  }
+  .site-header:not(.home-site-header) .menu-toggle[aria-expanded="true"] span:nth-child(3){
+    transform:translateY(-8px) rotate(-45deg);
+  }
 }
 @media(max-width:720px){
   .home-reference .home-site-header .primary-nav{
