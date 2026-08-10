@@ -13,9 +13,9 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  PRODUCT_SHA: 94cf27431d0ac5cf50c10ff2c38ced73d68eaef6
+  PRODUCT_SHA: 52c66997b7f9f9c085356dfafe5aba2389f07674
   AUDIT_BASE_URL: http://127.0.0.1:4173
-  EXPECTED_RELEASE_SHA: 94cf27431d0ac5cf50c10ff2c38ced73d68eaef6
+  EXPECTED_RELEASE_SHA: 52c66997b7f9f9c085356dfafe5aba2389f07674
   AUDIT_CANONICAL_BASE: https://techgrity.co.zw
 
 jobs:
@@ -26,7 +26,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: 94cf27431d0ac5cf50c10ff2c38ced73d68eaef6
+          ref: 52c66997b7f9f9c085356dfafe5aba2389f07674
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
@@ -121,7 +121,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: 94cf27431d0ac5cf50c10ff2c38ced73d68eaef6
+          ref: 52c66997b7f9f9c085356dfafe5aba2389f07674
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
