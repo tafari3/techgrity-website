@@ -36,6 +36,7 @@ function normaliseHtml(input){
  }
  html=html.replace('<b>Location</b><small>Harare, Zimbabwe</small>',`<b>Head office</b><small>${ADDRESS}</small>`);
  html=html.replace('<span>Harare, Zimbabwe</span><a href="/resources/">',`<span>${ADDRESS_LINES}</span><a href="/resources/">`);
+ html=html.replaceAll('Only confirmed public information appears. Legal registration details, exact address, leadership, partners and certifications remain omitted until formally approved.','Only confirmed public information appears. Published company and contact details are limited to verified current facts. Leadership profiles, partner claims and certifications remain omitted until formally approved.');
  html=html.replace('<script src="/script.js" defer></script>','<script src="/site.js" defer></script>');
  html=html.replace(/<img([^>]*?)\/\s+style=/g,'<img$1 style=');
  return html;
