@@ -24,6 +24,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 concurrency:
   group: techgrity-manual-visual-${{ github.ref }}
@@ -140,6 +141,15 @@ jobs:
           print(f'VERCEL_AUTOMATION_BYPASS_CONFIGURED={bool(os.environ.get("VERCEL_AUTOMATION_BYPASS_SECRET", "").strip())}')
           PY
 
+      - name: Mint trusted GitHub OIDC identity
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const token = await core.getIDToken();
+            core.setSecret(token);
+            core.exportVariable('VERCEL_TRUSTED_OIDC_TOKEN', token);
+            core.info('VERCEL_TRUSTED_OIDC_CONFIGURED=true');
+
       - name: Install capture dependencies
         run: |
           set -Eeuo pipefail
@@ -155,6 +165,7 @@ jobs:
           url = os.environ['AUDIT_BASE_URL'].rstrip('/') + '/release.json'
           expected = os.environ['EXPECTED_RELEASE_SHA']
           bypass = os.environ.get('VERCEL_AUTOMATION_BYPASS_SECRET', '').strip()
+          trusted_oidc = os.environ.get('VERCEL_TRUSTED_OIDC_TOKEN', '').strip()
           headers = {
               'Accept': 'application/json',
               'User-Agent': 'Techgrity-Release-Boundary-Audit/1.0',
@@ -162,6 +173,8 @@ jobs:
           if bypass:
               headers['x-vercel-protection-bypass'] = bypass
               headers['x-vercel-set-bypass-cookie'] = 'true'
+          if trusted_oidc:
+              headers['x-vercel-trusted-oidc-idp-token'] = trusted_oidc
           request = urllib.request.Request(url, headers=headers)
 
           try:
@@ -181,6 +194,7 @@ jobs:
                   'classification': 'network-error',
                   'reason': str(error.reason)[:300],
                   'automationBypassConfigured': bool(bypass),
+                  'trustedOidcConfigured': bool(trusted_oidc),
               }, indent=2))
               raise SystemExit('Release boundary could not be reached.')
 
@@ -225,6 +239,7 @@ jobs:
               'contentType': content_type,
               'bodyBytesRead': len(raw),
               'automationBypassConfigured': bool(bypass),
+              'trustedOidcConfigured': bool(trusted_oidc),
               'protection': protection,
               'markers': markers,
               'bodyPrefix': body_prefix,
@@ -232,9 +247,11 @@ jobs:
           print(json.dumps(diagnostic, indent=2))
 
           if status < 200 or status >= 300:
-              if status == 401 and markers['vercelAuthentication'] and not bypass:
-                  raise SystemExit('Protected Vercel audit target requires VERCEL_AUTOMATION_BYPASS_SECRET, but the repository secret is not configured.')
-              if status == 401 and markers['vercelAuthentication'] and bypass:
+              if status == 401 and markers['vercelAuthentication']:
+                  if trusted_oidc:
+                      raise SystemExit('GitHub OIDC identity is not trusted by this Vercel project protection configuration.')
+                  if not bypass:
+                      raise SystemExit('Protected Vercel audit target has neither an automation bypass secret nor a trusted OIDC identity.')
                   raise SystemExit('Configured VERCEL_AUTOMATION_BYPASS_SECRET did not bypass this Vercel audit target.')
               raise SystemExit(f'Release boundary returned HTTP {status}.')
 
@@ -260,6 +277,7 @@ jobs:
               'actual': actual,
               'routeCount': route_count,
               'automationBypassConfigured': bool(bypass),
+              'trustedOidcConfigured': bool(trusted_oidc),
           }, indent=2))
           if actual != expected:
               raise SystemExit('Release SHA does not match the manual-audit boundary.')
