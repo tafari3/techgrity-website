@@ -80,8 +80,9 @@ if(/immutable|max-age=31536000/.test(cache)||!cache.includes('must-revalidate'))
 for(const file of walk(path.join(root,'dist')).filter(file=>file.endsWith('.html'))){
   const html=fs.readFileSync(file,'utf8');
   if(/<img[^>]*\/\s+style=/.test(html))errors.push(`${path.relative(root,file)} contains malformed self-closing image markup`);
+  if(html.includes('Legal registration details, exact address, leadership, partners and certifications remain omitted until formally approved.'))errors.push(`${path.relative(root,file)} contains contradictory company-information copy`);
 }
 const builtSiteJs=fs.readFileSync(path.join(root,'dist','site.js'),'utf8');
 if(/\+263 78 330 4307|\+263783304307/.test(builtSiteJs))errors.push('built site.js contains superseded telephone data');
 if(errors.length){console.error(errors.map(error=>`ERROR: ${error}`).join('\n'));process.exit(1)}
-console.log(JSON.stringify({node:pkg.engines.node,assetCache:cache,sourceDrift:false,malformedImages:false,scrollSafeNavigationFocus:true,responsiveMenuHeaderPinned:true,legacyMenuCloseIcon:true,tabletArchitectureOverflowProtected:true,desktopIndustryWordIntegrity:true,ctaActionNoWrap:true,mobileBreadcrumbsUnclipped:true},null,2));
+console.log(JSON.stringify({node:pkg.engines.node,assetCache:cache,sourceDrift:false,malformedImages:false,scrollSafeNavigationFocus:true,responsiveMenuHeaderPinned:true,legacyMenuCloseIcon:true,tabletArchitectureOverflowProtected:true,desktopIndustryWordIntegrity:true,ctaActionNoWrap:true,mobileBreadcrumbsUnclipped:true,companyInformationCopyConsistent:true},null,2));
