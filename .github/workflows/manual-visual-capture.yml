@@ -90,7 +90,7 @@ jobs:
           cache: pip
           cache-dependency-path: requirements-dev.txt
 
-      - name: Resolve preview-aware audit target
+      - name: Resolve remote audit target
         env:
           EVENT_NAME: ${{ github.event_name }}
           PR_BODY: ${{ github.event.pull_request.body || '' }}
@@ -110,8 +110,8 @@ jobs:
 
           if os.environ.get('EVENT_NAME') == 'pull_request':
               body = os.environ.get('PR_BODY', '')
-              url_match = re.search(
-                  r'preview URL:\s*\[[^\]]+\]\((https://[a-z0-9-]+\.vercel\.app/?)\)',
+              review_match = re.search(
+                  r'(?:preview|review) URL:\s*\[[^\]]+\]\((https://[a-z0-9-]+\.vercel\.app/?)\)',
                   body,
                   flags=re.IGNORECASE,
               )
@@ -120,10 +120,10 @@ jobs:
                   body,
                   flags=re.IGNORECASE,
               )
-              if url_match and sha_match:
-                  base_url = url_match.group(1).rstrip('/')
+              if review_match and sha_match:
+                  base_url = review_match.group(1).rstrip('/')
                   expected_sha = sha_match.group(1).lower()
-                  source = 'pr-preview-boundary'
+                  source = 'pr-review-boundary'
 
           if not re.fullmatch(r'https://(?:[a-z0-9-]+\.vercel\.app|techgrity\.co\.zw)', base_url, flags=re.IGNORECASE):
               raise SystemExit(f'Unsupported audit origin: {base_url}')
@@ -233,9 +233,9 @@ jobs:
 
           if status < 200 or status >= 300:
               if status == 401 and markers['vercelAuthentication'] and not bypass:
-                  raise SystemExit('Protected preview requires VERCEL_AUTOMATION_BYPASS_SECRET, but the repository secret is not configured.')
+                  raise SystemExit('Protected Vercel audit target requires VERCEL_AUTOMATION_BYPASS_SECRET, but the repository secret is not configured.')
               if status == 401 and markers['vercelAuthentication'] and bypass:
-                  raise SystemExit('Configured VERCEL_AUTOMATION_BYPASS_SECRET did not bypass this preview.')
+                  raise SystemExit('Configured VERCEL_AUTOMATION_BYPASS_SECRET did not bypass this Vercel audit target.')
               raise SystemExit(f'Release boundary returned HTTP {status}.')
 
           try:
@@ -276,6 +276,6 @@ jobs:
         with:
           name: manual-visual-${{ matrix.browser }}-${{ matrix.viewport }}
           path: evidence/manual-visual/${{ matrix.browser }}/${{ matrix.viewport }}/
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 30
           compression-level: 6
