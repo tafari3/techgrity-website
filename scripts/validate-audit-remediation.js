@@ -59,6 +59,9 @@ for(const visualPolishGuard of [
   'font-size:min(5vw,64px)',
   'overflow-wrap:normal',
   '.cta-panel .button{flex:0 0 auto;white-space:nowrap}',
+  '.breadcrumbs>*{display:none!important}',
+  '.breadcrumbs>a:first-child{display:inline-flex!important}',
+  '.breadcrumbs>span:nth-last-child(2){display:inline-flex!important;align-items:center}',
   '.breadcrumbs>span:last-child',
   'overflow:visible!important',
 ]){
@@ -85,4 +88,4 @@ for(const file of walk(path.join(root,'dist')).filter(file=>file.endsWith('.html
 const builtSiteJs=fs.readFileSync(path.join(root,'dist','site.js'),'utf8');
 if(/\+263 78 330 4307|\+263783304307/.test(builtSiteJs))errors.push('built site.js contains superseded telephone data');
 if(errors.length){console.error(errors.map(error=>`ERROR: ${error}`).join('\n'));process.exit(1)}
-console.log(JSON.stringify({node:pkg.engines.node,assetCache:cache,sourceDrift:false,malformedImages:false,scrollSafeNavigationFocus:true,responsiveMenuHeaderPinned:true,legacyMenuCloseIcon:true,tabletArchitectureOverflowProtected:true,desktopIndustryWordIntegrity:true,ctaActionNoWrap:true,mobileBreadcrumbsUnclipped:true,companyInformationCopyConsistent:true},null,2));
+console.log(JSON.stringify({node:pkg.engines.node,assetCache:cache,sourceDrift:false,malformedImages:false,scrollSafeNavigationFocus:true,responsiveMenuHeaderPinned:true,legacyMenuCloseIcon:true,tabletArchitectureOverflowProtected:true,desktopIndustryWordIntegrity:true,ctaActionNoWrap:true,mobileBreadcrumbsConcise:true,companyInformationCopyConsistent:true},null,2));
