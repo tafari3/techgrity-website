@@ -16,6 +16,7 @@ EXPECTED_RELEASE_SHA = os.environ.get(
 BROWSER_NAME = os.environ.get("AUDIT_BROWSER", "chromium")
 VIEWPORT_LABEL = os.environ.get("AUDIT_VIEWPORT", "desktop")
 CAPTURE_MODE = os.environ.get("AUDIT_CAPTURE_MODE", "scroll")
+VERCEL_AUTOMATION_BYPASS_SECRET = os.environ.get("VERCEL_AUTOMATION_BYPASS_SECRET", "").strip()
 
 VIEWPORTS = {
     "desktop-wide": {"width": 1672, "height": 941},
@@ -240,12 +241,19 @@ def capture_form_validation(page, route_slug: str) -> dict | None:
 with sync_playwright() as playwright:
     browser_type = getattr(playwright, BROWSER_NAME)
     browser = browser_type.launch(headless=True)
+    bypass_headers = {}
+    if VERCEL_AUTOMATION_BYPASS_SECRET:
+        bypass_headers = {
+            "x-vercel-protection-bypass": VERCEL_AUTOMATION_BYPASS_SECRET,
+            "x-vercel-set-bypass-cookie": "true",
+        }
     context = browser.new_context(
         viewport=VIEWPORT,
         device_scale_factor=1,
         color_scheme="light",
         locale="en-ZW",
         reduced_motion="no-preference",
+        extra_http_headers=bypass_headers or None,
     )
 
     release_page = context.new_page()
@@ -317,6 +325,7 @@ manifest = {
     "browser": BROWSER_NAME,
     "viewport": {"label": VIEWPORT_LABEL, **VIEWPORT},
     "captureMode": CAPTURE_MODE,
+    "automationBypassConfigured": bool(VERCEL_AUTOMATION_BYPASS_SECRET),
     "routeCount": len(ROUTES),
     "recordCount": len(records),
     "errorCount": len(errors),
@@ -324,6 +333,6 @@ manifest = {
     "errors": errors,
 }
 (OUT / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
-print(json.dumps({k: manifest[k] for k in ["browser", "viewport", "captureMode", "routeCount", "recordCount", "errorCount"]}, indent=2))
+print(json.dumps({k: manifest[k] for k in ["browser", "viewport", "captureMode", "automationBypassConfigured", "routeCount", "recordCount", "errorCount"]}, indent=2))
 if errors:
     raise SystemExit(f"Manual visual capture failed for {len(errors)} route(s).")
