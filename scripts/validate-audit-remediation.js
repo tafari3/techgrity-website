@@ -53,6 +53,17 @@ for(const closeIconGuard of [
 ]){
   if(!polishCss.includes(closeIconGuard))errors.push(`polish.css is missing truthful legacy menu close state: ${closeIconGuard}`);
 }
+for(const visualPolishGuard of [
+  '@media(min-width:1101px)',
+  '.industry-detail.telecommunications .page-hero h1',
+  'font-size:min(5vw,64px)',
+  'overflow-wrap:normal',
+  '.cta-panel .button{flex:0 0 auto;white-space:nowrap}',
+  '.breadcrumbs>span:last-child',
+  'overflow:visible!important',
+]){
+  if(!polishCss.includes(visualPolishGuard))errors.push(`polish.css is missing final visual polish protection: ${visualPolishGuard}`);
+}
 if(!siteJs.includes("control.removeAttribute('aria-describedby')"))errors.push('site.js is missing generated aria-describedby cleanup');
 const forms=fs.readFileSync(path.join(root,'api','_forms.js'),'utf8');
 if(forms.includes(' — '))errors.push('SMTP subject still contains an unencoded Unicode em dash');
@@ -73,4 +84,4 @@ for(const file of walk(path.join(root,'dist')).filter(file=>file.endsWith('.html
 const builtSiteJs=fs.readFileSync(path.join(root,'dist','site.js'),'utf8');
 if(/\+263 78 330 4307|\+263783304307/.test(builtSiteJs))errors.push('built site.js contains superseded telephone data');
 if(errors.length){console.error(errors.map(error=>`ERROR: ${error}`).join('\n'));process.exit(1)}
-console.log(JSON.stringify({node:pkg.engines.node,assetCache:cache,sourceDrift:false,malformedImages:false,scrollSafeNavigationFocus:true,responsiveMenuHeaderPinned:true,legacyMenuCloseIcon:true,tabletArchitectureOverflowProtected:true},null,2));
+console.log(JSON.stringify({node:pkg.engines.node,assetCache:cache,sourceDrift:false,malformedImages:false,scrollSafeNavigationFocus:true,responsiveMenuHeaderPinned:true,legacyMenuCloseIcon:true,tabletArchitectureOverflowProtected:true,desktopIndustryWordIntegrity:true,ctaActionNoWrap:true,mobileBreadcrumbsUnclipped:true},null,2));
