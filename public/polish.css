@@ -216,18 +216,18 @@ main [id]{scroll-margin-top:116px}
 /* Final CTA actions stay visually decisive rather than breaking into two lines. */
 .cta-panel .button{flex:0 0 auto;white-space:nowrap}
 
-/* Mobile breadcrumbs show useful context without clipping off-screen. */
+/* Mobile breadcrumbs show only useful context and never clip off-screen. */
 @media(max-width:720px){
   .breadcrumbs{
     overflow:visible!important;
     white-space:normal!important;
     flex-wrap:wrap;
   }
-  .breadcrumbs>*{display:none}
-  .breadcrumbs>a:first-child{display:inline-flex}
-  .breadcrumbs>span:nth-last-child(2){display:inline-flex;align-items:center}
+  .breadcrumbs>*{display:none!important}
+  .breadcrumbs>a:first-child{display:inline-flex!important}
+  .breadcrumbs>span:nth-last-child(2){display:inline-flex!important;align-items:center}
   .breadcrumbs>span:last-child{
-    display:block;
+    display:block!important;
     flex:1 1 0;
     min-width:0;
     align-self:center;
