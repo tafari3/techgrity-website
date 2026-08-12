@@ -27,14 +27,23 @@ for(const obsolete of ['scripts/write-brand-assets.js','scripts/finalize-brand-a
 const exactMaster=path.join(root,'public','assets','techgrity-primary-horizontal-approved.png');
 if(digest(exactMaster)!==FORMAL_SOURCE_SHA)errors.push(`founder-approved exact logo source drift: ${digest(exactMaster)}`);
 const syncScript=fs.readFileSync(path.join(root,'scripts','sync-techgrity-corporate-assets.py'),'utf8');
-for(const authority of [FORMAL_IDENTITY_COMMIT,FORMAL_SOURCE_SHA,'Pillow==12.2.0'.replace('Pillow==','')])if(!syncScript.includes(authority))errors.push(`formal brand sync is missing authority pin: ${authority}`);
+for(const authority of [FORMAL_IDENTITY_COMMIT,FORMAL_SOURCE_SHA,'12.2.0'])if(!syncScript.includes(authority))errors.push(`formal brand sync is missing authority pin: ${authority}`);
 for(const hash of Object.values(FORMAL_ASSET_SHA))if(!syncScript.includes(hash))errors.push(`formal brand sync is missing derivative SHA-256 pin: ${hash}`);
-for(const forbidden of ['Arial','Helvetica','<text','vector reconstruction']){
-  if((forbidden==='vector reconstruction'&&!syncScript.includes('no redraw, tracing, vector reconstruction or re-typesetting'))||(forbidden!=='vector reconstruction'&&syncScript.includes(forbidden)))errors.push(`formal brand sync violates no-reconstruction boundary: ${forbidden}`);
-}
+for(const forbidden of ['Arial','Helvetica','<text'])if(syncScript.includes(forbidden))errors.push(`formal brand sync violates no-reconstruction boundary: ${forbidden}`);
+if(!syncScript.includes('no redraw, tracing, vector reconstruction or re-typesetting'))errors.push('formal brand sync is missing explicit no-reconstruction provenance');
 const buildJs=fs.readFileSync(path.join(root,'scripts','build.js'),'utf8');
 for(const forbidden of ['writeBrandBinaryAssets','finalizeBrandAssets','#071D49','#0D9488'])if(buildJs.includes(forbidden))errors.push(`build.js still contains synthetic brand logic: ${forbidden}`);
 for(const required of ['techgrity-horizontal-primary-1600.png','techgrity-horizontal-reversed-1600.png','techgrity-symbol-primary-512.png'])if(!buildJs.includes(required))errors.push(`build.js is missing formal corporate derivative: ${required}`);
+const exhaustiveAudit=fs.readFileSync(path.join(root,'scripts','exhaustive-candidate-audit.py'),'utf8');
+for(const required of [
+  '/assets/techgrity-horizontal-primary-1600.png',
+  '/assets/techgrity-horizontal-reversed-1600.png',
+  '/assets/techgrity-symbol-primary-512.png',
+  ...Object.values(FORMAL_ASSET_SHA),
+])if(!exhaustiveAudit.includes(required))errors.push(`exhaustive candidate audit is missing formal brand contract: ${required}`);
+for(const stale of ["fetch('/assets/techgrity-logo.svg'",'incomplete-wordmark','svgFavicon','icoFavicon'])if(exhaustiveAudit.includes(stale))errors.push(`exhaustive candidate audit still assumes synthetic brand output: ${stale}`);
+const reviewAudit=fs.readFileSync(path.join(root,'scripts','review-regression-audit.py'),'utf8');
+if(!reviewAudit.includes('/assets/techgrity-symbol-primary-512.png')||!reviewAudit.includes(FORMAL_ASSET_SHA['techgrity-symbol-primary-512.png']))errors.push('review regression audit is not pinned to formal TG symbol');
 const pkg=JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8'));
 if(pkg.engines?.node!=='24.x')errors.push(`Node engine is not pinned to 24.x: ${pkg.engines?.node}`);
 if(!pkg.scripts?.build?.includes('techgrity-corporate-render-requirements.txt')||!pkg.scripts?.build?.includes('sync-techgrity-corporate-assets.py'))errors.push('build command does not regenerate and verify formal Techgrity corporate derivatives');
@@ -119,8 +128,8 @@ for(const [filename,expected] of Object.entries(FORMAL_ASSET_SHA)){
 }
 for(const stale of ['techgrity-logo.svg','techgrity-logo-light.svg','techgrity-mark.svg'])if(fs.existsSync(path.join(root,'dist','assets',stale)))errors.push(`built output contains prohibited synthetic logo asset: ${stale}`);
 const builtManifest=JSON.parse(fs.readFileSync(path.join(root,'dist','site.webmanifest'),'utf8'));
-if(builtManifest.icons?.[0]?.src!=='/assets/techgrity-symbol-primary-512.png')errors.push('built manifest does not use formal TG symbol');
+if(builtManifest.icons?.length!==1||builtManifest.icons[0]?.src!=='/assets/techgrity-symbol-primary-512.png'||builtManifest.icons[0]?.sizes!=='512x512'||builtManifest.icons[0]?.type!=='image/png'||builtManifest.icons[0]?.purpose!=='any')errors.push('built manifest does not use formal TG symbol contract');
 const builtSiteJs=fs.readFileSync(path.join(root,'dist','site.js'),'utf8');
 if(/\+263 78 330 4307|\+263783304307/.test(builtSiteJs))errors.push('built site.js contains superseded telephone data');
 if(errors.length){console.error(errors.map(error=>`ERROR: ${error}`).join('\n'));process.exit(1)}
-console.log(JSON.stringify({node:pkg.engines.node,assetCache:cache,formalIdentityCommit:FORMAL_IDENTITY_COMMIT,formalSourceSha256:FORMAL_SOURCE_SHA,formalAssetSha256:FORMAL_ASSET_SHA,syntheticCorporateLogoRemoved:true,sourceDrift:false,malformedImages:false,scrollSafeNavigationFocus:true,responsiveMenuHeaderPinned:true,legacyMenuCloseIcon:true,tabletArchitectureOverflowProtected:true,desktopIndustryWordIntegrity:true,ctaActionNoWrap:true,mobileBreadcrumbsConcise:true,companyInformationCopyConsistent:true},null,2));
+console.log(JSON.stringify({node:pkg.engines.node,assetCache:cache,formalIdentityCommit:FORMAL_IDENTITY_COMMIT,formalSourceSha256:FORMAL_SOURCE_SHA,formalAssetSha256:FORMAL_ASSET_SHA,syntheticCorporateLogoRemoved:true,formalAuditContractsPinned:true,sourceDrift:false,malformedImages:false,scrollSafeNavigationFocus:true,responsiveMenuHeaderPinned:true,legacyMenuCloseIcon:true,tabletArchitectureOverflowProtected:true,desktopIndustryWordIntegrity:true,ctaActionNoWrap:true,mobileBreadcrumbsConcise:true,companyInformationCopyConsistent:true},null,2));
