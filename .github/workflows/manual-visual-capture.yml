@@ -24,102 +24,14 @@ on:
 
 permissions:
   contents: read
-  id-token: write
 
 concurrency:
   group: techgrity-manual-visual-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  AUDIT_PROJECT_NAME: techgrity-final-audit-2b77b7fd
-  AUDIT_TEAM_ID: team_rGXRfIoc1yeEl7S3CKES0IzD
-
 jobs:
-  repair-review-access:
-    name: Isolated review access repair
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    env:
-      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-      PR_BODY: ${{ github.event.pull_request.body || '' }}
-    steps:
-      - name: Disable SSO only on isolated audit project when token exists
-        run: |
-          set -Eeuo pipefail
-          python - <<'PY'
-          import json, os, re, urllib.error, urllib.parse, urllib.request
-
-          token = os.environ.get('VERCEL_TOKEN', '').strip()
-          body = os.environ.get('PR_BODY', '')
-          project = os.environ['AUDIT_PROJECT_NAME']
-          team_id = os.environ['AUDIT_TEAM_ID']
-          review_match = re.search(
-              r'(?:preview|review) URL:\s*\[[^\]]+\]\((https://[a-z0-9-]+\.vercel\.app/?)\)',
-              body,
-              flags=re.IGNORECASE,
-          )
-          review_url = review_match.group(1).rstrip('/') if review_match else ''
-          safe_target = bool(re.fullmatch(
-              rf'https://{re.escape(project)}-[a-z0-9-]+\.vercel\.app',
-              review_url,
-              flags=re.IGNORECASE,
-          ))
-          print(f'VERCEL_TOKEN_CONFIGURED={bool(token)}')
-          print(f'ISOLATED_REVIEW_TARGET_CONFIRMED={safe_target}')
-          if not token:
-              print('ISOLATED_SSO_REPAIR=skipped-no-vercel-token')
-              raise SystemExit(0)
-          if not safe_target:
-              raise SystemExit('Refusing Vercel write: PR review URL is not the isolated audit project.')
-
-          url = (
-              'https://api.vercel.com/v9/projects/'
-              + urllib.parse.quote(project, safe='')
-              + '?teamId=' + urllib.parse.quote(team_id, safe='')
-          )
-          payload = json.dumps({'ssoProtection': None}).encode('utf-8')
-          request = urllib.request.Request(
-              url,
-              data=payload,
-              method='PATCH',
-              headers={
-                  'Authorization': f'Bearer {token}',
-                  'Content-Type': 'application/json',
-                  'User-Agent': 'Techgrity-Isolated-Review-Access-Repair/1.0',
-              },
-          )
-          try:
-              with urllib.request.urlopen(request, timeout=30) as response:
-                  status = int(response.status)
-                  raw = response.read(4096)
-          except urllib.error.HTTPError as error:
-              status = int(error.code)
-              raw = error.read(4096)
-          except urllib.error.URLError as error:
-              print(f'ISOLATED_SSO_REPAIR=network-error:{type(error.reason).__name__}')
-              raise SystemExit('Vercel project update could not be reached.')
-
-          classification = 'unknown'
-          try:
-              parsed = json.loads(raw.decode('utf-8', 'replace') or '{}')
-              classification = (
-                  parsed.get('error', {}).get('code')
-                  or parsed.get('error', {}).get('message')
-                  or parsed.get('code')
-                  or 'json-response'
-              )
-          except Exception:
-              classification = 'non-json-response' if raw else 'empty-response'
-          print(f'ISOLATED_SSO_REPAIR_HTTP={status}')
-          print(f'ISOLATED_SSO_REPAIR_CLASS={str(classification)[:160]}')
-          if status < 200 or status >= 300:
-              raise SystemExit('Existing VERCEL_TOKEN could not disable SSO on the isolated audit project.')
-          print('ISOLATED_SSO_REPAIR=success')
-          PY
-
   capture:
     name: ${{ matrix.browser }} / ${{ matrix.viewport }}
-    needs: [repair-review-access]
     runs-on: ubuntu-latest
     timeout-minutes: 120
     strategy:
@@ -228,15 +140,6 @@ jobs:
           print(f'VERCEL_AUTOMATION_BYPASS_CONFIGURED={bool(os.environ.get("VERCEL_AUTOMATION_BYPASS_SECRET", "").strip())}')
           PY
 
-      - name: Mint trusted GitHub OIDC identity
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const token = await core.getIDToken();
-            core.setSecret(token);
-            core.exportVariable('VERCEL_TRUSTED_OIDC_TOKEN', token);
-            core.info('VERCEL_TRUSTED_OIDC_CONFIGURED=true');
-
       - name: Install capture dependencies
         run: |
           set -Eeuo pipefail
@@ -252,13 +155,13 @@ jobs:
           url = os.environ['AUDIT_BASE_URL'].rstrip('/') + '/release.json'
           expected = os.environ['EXPECTED_RELEASE_SHA']
           bypass = os.environ.get('VERCEL_AUTOMATION_BYPASS_SECRET', '').strip()
-          trusted_oidc = os.environ.get('VERCEL_TRUSTED_OIDC_TOKEN', '').strip()
-          headers = {'Accept': 'application/json', 'User-Agent': 'Techgrity-Release-Boundary-Audit/1.0'}
+          headers = {
+              'Accept': 'application/json',
+              'User-Agent': 'Techgrity-Release-Boundary-Audit/1.0',
+          }
           if bypass:
               headers['x-vercel-protection-bypass'] = bypass
               headers['x-vercel-set-bypass-cookie'] = 'true'
-          if trusted_oidc:
-              headers['x-vercel-trusted-oidc-idp-token'] = trusted_oidc
           request = urllib.request.Request(url, headers=headers)
 
           try:
@@ -273,7 +176,11 @@ jobs:
               content_type = error.headers.get('Content-Type', '') if error.headers else ''
               raw = error.read(65536)
           except urllib.error.URLError as error:
-              print(json.dumps({'url': url, 'classification': 'network-error', 'reason': str(error.reason)[:300]}, indent=2))
+              print(json.dumps({
+                  'url': url,
+                  'classification': 'network-error',
+                  'reason': str(error.reason)[:300],
+              }, indent=2))
               raise SystemExit('Release boundary could not be reached.')
 
           text = raw.decode('utf-8', 'replace')
@@ -282,7 +189,11 @@ jobs:
           try:
               candidate = json.loads(text)
               if isinstance(candidate, dict) and isinstance(candidate.get('protection'), dict):
-                  protection = {k:v for k,v in candidate['protection'].items() if k in {'vercel_auth_enabled','password_enabled','auto_vercel_auth_redirect'}}
+                  protection = {
+                      key: value
+                      for key, value in candidate['protection'].items()
+                      if key in {'vercel_auth_enabled', 'password_enabled', 'auto_vercel_auth_redirect'}
+                  }
           except json.JSONDecodeError:
               pass
           vercel_auth = protection.get('vercel_auth_enabled') is True or 'protected deployment' in lower
@@ -292,21 +203,27 @@ jobs:
               'status': status,
               'contentType': content_type,
               'automationBypassConfigured': bool(bypass),
-              'trustedOidcConfigured': bool(trusted_oidc),
               'protection': protection,
               'bodyPrefix': re.sub(r'\s+', ' ', text).strip()[:500],
           }, indent=2))
+
           if status < 200 or status >= 300:
               if status == 401 and vercel_auth:
-                  raise SystemExit('Vercel Authentication still protects the isolated review target after all configured bypass/repair paths.')
+                  raise SystemExit('Vercel Authentication protects the selected remote audit target.')
               raise SystemExit(f'Release boundary returned HTTP {status}.')
+
           try:
               payload = json.loads(text)
           except json.JSONDecodeError:
               raise SystemExit('Release boundary is not JSON.')
           actual = payload.get('commit')
           route_count = payload.get('routeCount')
-          print(json.dumps({'classification':'release-marker-json','expected':expected,'actual':actual,'routeCount':route_count}, indent=2))
+          print(json.dumps({
+              'classification': 'release-marker-json',
+              'expected': expected,
+              'actual': actual,
+              'routeCount': route_count,
+          }, indent=2))
           if actual != expected:
               raise SystemExit('Release SHA does not match the manual-audit boundary.')
           if route_count != 35:
