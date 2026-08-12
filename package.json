@@ -4,7 +4,7 @@
   "private": true,
   "description": "Production website for Techgrity Systems",
   "scripts": {
-    "build": "node scripts/build.js",
+    "build": "python3 -m pip install --disable-pip-version-check --no-deps -q -r scripts/techgrity-corporate-render-requirements.txt && python3 scripts/sync-techgrity-corporate-assets.py && node scripts/build.js",
     "validate": "node scripts/validate.js && node scripts/validate-audit-remediation.js",
     "test": "npm run build && npm run validate && npm run test:forms && npm run test:server",
     "serve": "node server.js",
