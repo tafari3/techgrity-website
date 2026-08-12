@@ -19,8 +19,11 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version-file: '.nvmrc'
           cache: npm
+
+      - name: Verify Node 24 runtime
+        run: node -e "const major=Number(process.versions.node.split('.')[0]); if(major!==24) throw new Error('Expected Node 24, got '+process.versions.node)"
 
       - name: Install Node dependencies
         run: npm ci

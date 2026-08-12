@@ -1,9 +1,14 @@
 'use strict';
-const fs=require('fs'),path=require('path'),crypto=require('crypto'),os=require('os');
-const writeBrandBinaryAssets=require('./write-brand-assets');
-const finalizeBrandAssets=require('./finalize-brand-assets');
+const fs=require('fs'),path=require('path'),crypto=require('crypto');
 const root=path.resolve(__dirname,'..'),dist=path.join(root,'dist');
 const errors=[],warnings=[];const manifest=JSON.parse(fs.readFileSync(path.join(dist,'route-manifest.json'),'utf8'));
+const BRAND_AUTHORITY={repository:'tafari3/Techgrity-Brand-Identity-',commit:'418e15ec95a53d67810397fa6c12e5f54822e137',sourceSha256:'76d40c46a1a9a1fde6b5a1bf7af506f4639bf29da86d0a3741416a5c2f8eeb1f'};
+const BRAND_ASSETS={
+ 'techgrity-horizontal-primary-1600.png':'69fc47babd46f4b6711c6264a33cbc9f2c84478325b28b4253a690b7889275cd',
+ 'techgrity-horizontal-reversed-1600.png':'da78093eaf7826709cd3c942d052b18813c3b294727a954014f3b2a858bbdb39',
+ 'techgrity-symbol-primary-512.png':'96b8b4900aa2e0b6c40ae82b70f49aa3a3f3a8535dafda7e34d5b75a49277ae9',
+};
+const PRIMARY='/assets/techgrity-horizontal-primary-1600.png',REVERSED='/assets/techgrity-horizontal-reversed-1600.png',SYMBOL='/assets/techgrity-symbol-primary-512.png';
 if(manifest.publicRoutes.length!==31)errors.push(`Expected 31 public routes, got ${manifest.publicRoutes.length}`);
 if(manifest.systemRoutes.length!==4)errors.push(`Expected 4 system routes, got ${manifest.systemRoutes.length}`);
 const titles=new Map(),descs=new Map();
@@ -16,9 +21,10 @@ for(const route of [...manifest.publicRoutes,...manifest.systemRoutes]){
  const tm=html.match(/<title>([\s\S]*?)<\/title>/i);if(!tm)errors.push(`${route}: missing title`);else if(manifest.publicRoutes.includes(route)){const t=tm[1].trim();if(titles.has(t))errors.push(`${route}: duplicate title with ${titles.get(t)}`);titles.set(t,route)}
  const dm=html.match(/<meta name="description" content="([^"]*)"/i);if(!dm)errors.push(`${route}: missing description`);else if(manifest.publicRoutes.includes(route)){const d=dm[1].trim();if(descs.has(d))errors.push(`${route}: duplicate description with ${descs.get(d)}`);descs.set(d,route)}
  if(!html.includes('<link rel="canonical"'))errors.push(`${route}: missing canonical`);
- if(/2367 Lavenham Road|\+263 78 330 4307|tel:\+263783304307|techgrity-primary-horizontal-approved\.png/.test(html))errors.push(`${route}: contains superseded brand or contact data`);
- if(!html.includes('/assets/techgrity-logo.svg'))errors.push(`${route}: missing transparent primary logo`);
- if(!html.includes('/assets/techgrity-mark.svg'))errors.push(`${route}: missing SVG favicon`);
+ if(/2367 Lavenham Road|\+263 78 330 4307|tel:\+263783304307|techgrity-primary-horizontal-approved\.png|techgrity-logo\.svg|techgrity-logo-light\.svg|techgrity-mark\.svg/.test(html))errors.push(`${route}: contains superseded brand or contact data`);
+ if(!html.includes(PRIMARY))errors.push(`${route}: missing founder-approved primary horizontal logo`);
+ if(!html.includes(REVERSED))errors.push(`${route}: missing governed reversed footer logo`);
+ if(!html.includes(SYMBOL))errors.push(`${route}: missing founder-approved TG symbol icon`);
  if(!html.includes('/polish.css'))errors.push(`${route}: missing final polish stylesheet`);
  if(/href="\/(digital-systems|infrastructure|technology-supply|delivery)\//.test(html))errors.push(`${route}: contains legacy route`);
  for(const m of html.matchAll(/(?:href|src)="([^"]+)"/g)){const href=m[1];if(href.startsWith('mailto:')||href.startsWith('tel:')||href.startsWith('http')||href.startsWith('data:')||href==='#')continue;if(!localExists(href))errors.push(`${route}: broken local reference ${href}`)}
@@ -26,20 +32,19 @@ for(const route of [...manifest.publicRoutes,...manifest.systemRoutes]){
 for(const route of ['/','/contact/']){const html=fs.readFileSync(routeToFile(route),'utf8');if(!html.includes('2367 Lavenham Drive'))errors.push(`${route}: verified head-office address missing`);if(!html.includes('+263 77 182 5554'))errors.push(`${route}: verified telephone missing`)}
 const cssFiles=files.filter(f=>f.endsWith('.css'));for(const f of cssFiles){const css=fs.readFileSync(f,'utf8');let depth=0;for(const c of css){if(c==='{')depth++;if(c==='}')depth--;if(depth<0)break}if(depth!==0)errors.push(`${path.relative(dist,f)}: unbalanced braces (${depth})`);if(/var\(--[a-z0-9-]+\}/i.test(css))errors.push(`${path.relative(dist,f)}: malformed CSS var()`)}
 const sitemap=fs.readFileSync(path.join(dist,'sitemap.xml'),'utf8');if((sitemap.match(/<url>/g)||[]).length!==31)errors.push('sitemap does not contain 31 URLs');
-const primary=fs.readFileSync(path.join(dist,'assets','techgrity-logo.svg'),'utf8');
-const light=fs.readFileSync(path.join(dist,'assets','techgrity-logo-light.svg'),'utf8');
-const mark=fs.readFileSync(path.join(dist,'assets','techgrity-mark.svg'),'utf8');
-if(!/<text[^>]*>TECHGRITY<\/text>/.test(primary)||!/<text[^>]*>SYSTEMS<\/text>/.test(primary))errors.push('primary logo does not contain the complete TECHGRITY SYSTEMS wordmark');
-if(primary.includes('fill="#FFFFFF"')||primary.includes('fill="#fff"'))errors.push('primary logo contains an unintended white filled panel');
-if(!light.includes('fill="#FFFFFF"')||!/<text[^>]*>SYSTEMS<\/text>/.test(light))errors.push('light footer logo is incomplete');
-if(!mark.includes('viewBox="0 -55 430 430"')||/<text[^>]*>TECHGRITY<\/text>/.test(mark))errors.push('favicon mark is not the isolated square TG monogram');
-const expectedDir=fs.mkdtempSync(path.join(os.tmpdir(),'techgrity-brand-'));
-try{
- fs.copyFileSync(path.join(root,'public','assets','techgrity-logo.svg'),path.join(expectedDir,'techgrity-logo.svg'));
- writeBrandBinaryAssets(expectedDir);finalizeBrandAssets(expectedDir);
- const rels=['techgrity-logo.svg','techgrity-logo-light.svg','techgrity-mark.svg','favicon.ico','favicon-16x16.png','favicon-32x32.png','apple-touch-icon.png'];
- const assetHashes={};
- for(const rel of rels){const actual=path.join(dist,'assets',rel),expected=path.join(expectedDir,rel);if(!fs.existsSync(actual)){errors.push(`missing brand asset: assets/${rel}`);continue}const ah=crypto.createHash('sha256').update(fs.readFileSync(actual)).digest('hex');const eh=crypto.createHash('sha256').update(fs.readFileSync(expected)).digest('hex');assetHashes[`assets/${rel}`]=ah;if(ah!==eh)errors.push(`assets/${rel}: generated output differs from deterministic source`)}
- if(errors.length){console.error(errors.map(x=>'ERROR: '+x).join('\n'));process.exitCode=1}else console.log(JSON.stringify({publicRoutes:manifest.publicRoutes.length,systemRoutes:manifest.systemRoutes.length,htmlFiles:files.filter(f=>f.endsWith('.html')).length,uniqueTitles:titles.size,uniqueDescriptions:descs.size,brandAssetHashes:assetHashes,warnings},null,2));
-}finally{fs.rmSync(expectedDir,{recursive:true,force:true})}
-if(process.exitCode)process.exit(process.exitCode);
+const assetHashes={};
+for(const [filename,expected] of Object.entries(BRAND_ASSETS)){
+ const asset=path.join(dist,'assets',filename);if(!fs.existsSync(asset)){errors.push(`missing founder-approved corporate asset: assets/${filename}`);continue}
+ const digest=crypto.createHash('sha256').update(fs.readFileSync(asset)).digest('hex');assetHashes[`assets/${filename}`]=digest;if(digest!==expected)errors.push(`assets/${filename}: formal corporate derivative SHA-256 drift (${digest})`);
+}
+for(const stale of ['techgrity-logo.svg','techgrity-logo-light.svg','techgrity-mark.svg'])if(fs.existsSync(path.join(dist,'assets',stale)))errors.push(`superseded synthetic brand asset shipped: assets/${stale}`);
+const sourceAsset=path.join(root,'public','assets','techgrity-primary-horizontal-approved.png');
+const sourceDigest=crypto.createHash('sha256').update(fs.readFileSync(sourceAsset)).digest('hex');
+if(sourceDigest!==BRAND_AUTHORITY.sourceSha256)errors.push(`founder-approved source master SHA-256 drift (${sourceDigest})`);
+const provenance=JSON.parse(fs.readFileSync(path.join(dist,'assets','techgrity-corporate-provenance.json'),'utf8'));
+if(provenance.identityRepository!==BRAND_AUTHORITY.repository||provenance.identityCommit!==BRAND_AUTHORITY.commit||provenance.approvedSourceSha256!==BRAND_AUTHORITY.sourceSha256)errors.push('corporate provenance does not match formal identity authority');
+for(const [filename,expected] of Object.entries(BRAND_ASSETS))if(provenance.derivativeSha256?.[filename]!==expected)errors.push(`corporate provenance derivative pin drift: ${filename}`);
+const webmanifest=JSON.parse(fs.readFileSync(path.join(dist,'site.webmanifest'),'utf8'));
+if(webmanifest.icons?.length!==1||webmanifest.icons[0]?.src!==SYMBOL||webmanifest.icons[0]?.sizes!=='512x512'||webmanifest.icons[0]?.type!=='image/png')errors.push('web manifest does not use the founder-approved TG symbol');
+if(errors.length){console.error(errors.map(x=>'ERROR: '+x).join('\n'));process.exit(1)}
+console.log(JSON.stringify({publicRoutes:manifest.publicRoutes.length,systemRoutes:manifest.systemRoutes.length,htmlFiles:files.filter(f=>f.endsWith('.html')).length,uniqueTitles:titles.size,uniqueDescriptions:descs.size,brandAuthority:BRAND_AUTHORITY,brandAssetHashes:assetHashes,warnings},null,2));

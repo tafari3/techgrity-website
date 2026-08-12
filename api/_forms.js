@@ -194,7 +194,7 @@ async function sendEmail({type, data, cfg, ref, req}) {
   const from = smtpAddress(process.env.MAIL_FROM_EMAIL || mail.user || '');
   const replyTo = smtpAddress(data.email || data.projectEmail || data.requestEmail);
   if (!mail.host || !mail.user || !mail.pass || !recipients.length || !from) throw Object.assign(new Error('Enquiry delivery is not commissioned.'), {status: 503});
-  await smtpSend({from, to: recipients, replyTo, subject: `${cfg.subject} — ${ref}`, text: textBody(type, data, ref, req), ref});
+  await smtpSend({from, to: recipients, replyTo, subject: `${cfg.subject} - ${ref}`, text: textBody(type, data, ref, req), ref});
 }
 
 async function handle(req, res, type) {

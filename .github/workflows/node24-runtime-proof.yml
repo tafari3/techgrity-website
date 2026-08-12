@@ -1,0 +1,38 @@
+name: Node 24 Runtime Proof
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: techgrity-node24-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-node24:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+
+      - name: Set up Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+
+      - name: Verify runtime boundary
+        run: |
+          set -Eeuo pipefail
+          node --version
+          node -e "const major=Number(process.versions.node.split('.')[0]); if(major!==24) throw new Error('Expected Node 24, got '+process.versions.node)"
+          npm ci
+          npm run build
+          npm run validate
+          npm run test:forms
+          npm run test:server
